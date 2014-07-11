@@ -6,6 +6,25 @@
  * Written by: Craig A. Lindley
  * Version: 1.21
  * Last Update: 07/04/2014
+ *
+ * Copyright (c) 2014 Craig A. Lindley
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ * the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
 
@@ -57,7 +76,7 @@ typedef struct {
     byte Red;
     byte Green;
     byte Blue;
-} 
+}
 RGB;
 
 // Logical screen descriptor attributes
@@ -112,7 +131,7 @@ int readByte() {
 int readWord() {
 
     int b0 = readByte();
-    int b1 = readByte();    
+    int b1 = readByte();
     return (b1 << 8) | b0;
 }
 
@@ -169,7 +188,7 @@ boolean parseGifHeader() {
     if ((strncmp(buffer, GIFHDRTAGNORM,  GIFHDRSIZE) != 0) &&
         (strncmp(buffer, GIFHDRTAGNORM1, GIFHDRSIZE) != 0))  {
         return false;
-    }	
+    }
     else    {
         return true;
     }
@@ -185,15 +204,15 @@ void parseLogicalScreenDescriptor() {
     lsdAspectRatio = readByte();
 
 #if DEBUG == 1
-    Serial.print("lsdWidth: "); 
+    Serial.print("lsdWidth: ");
     Serial.println(lsdWidth);
-    Serial.print("lsdHeight: "); 
+    Serial.print("lsdHeight: ");
     Serial.println(lsdHeight);
-    Serial.print("lsdPackedField: "); 
+    Serial.print("lsdPackedField: ");
     Serial.println(lsdPackedField, HEX);
-    Serial.print("lsdBackgroundIndex: "); 
+    Serial.print("lsdBackgroundIndex: ");
     Serial.println(lsdBackgroundIndex);
-    Serial.print("lsdAspectRatio: "); 
+    Serial.print("lsdAspectRatio: ");
     Serial.println(lsdAspectRatio);
 #endif
 }
@@ -215,7 +234,7 @@ void parseGlobalColorTable() {
         // Read color values into the palette array
         int colorTableBytes = sizeof(RGB) * colorCount;
         readIntoBuffer(palette, colorTableBytes);
-    }    
+    }
 }
 
 // Parse plain text extension and dispose of it
@@ -297,7 +316,7 @@ void parseApplicationExtension() {
     if (strlen(tempBuffer) != 0) {
         Serial.print("Application Extension: ");
         Serial.println(tempBuffer);
-    }	
+    }
 #endif
 
     // Consume any additional app data
@@ -322,7 +341,7 @@ void parseCommentExtension() {
         memset(tempBuffer, 0, sizeof(tempBuffer));
 
         // Read len bytes into buffer
-        readIntoBuffer(tempBuffer, len);		
+        readIntoBuffer(tempBuffer, len);
 
 #if DEBUG == 1
         // Display the comment extension string
@@ -343,7 +362,7 @@ int parseGIFFileTerminator() {
     Serial.println("\nProcessing file terminator");
 #endif
 
-    byte b = readByte();	
+    byte b = readByte();
     if (b != 0x3B) {
 
 #if DEBUG == 1
@@ -352,7 +371,7 @@ int parseGIFFileTerminator() {
 #endif
         Serial.println("Bad GIF file format - Bad terminator");
         return ERROR_BADGIFFORMAT;
-    }	
+    }
     else	{
         return ERROR_NONE;
     }
@@ -390,7 +409,7 @@ void parseTableBasedImage() {
 
 #if DEBUG == 1
     Serial.print("Image interlaced: ");
-    Serial.println((tbiInterlaced != 0) ? "Yes" : "No");     
+    Serial.println((tbiInterlaced != 0) ? "Yes" : "No");
 #endif
 
     // Does this image have a local color table ?
@@ -414,7 +433,7 @@ void parseTableBasedImage() {
     if (keyFrame) {
         if (transparentColorIndex == NO_TRANSPARENT_INDEX) {
             fillImageData(lsdBackgroundIndex);
-        }    
+        }
         else    {
             fillImageData(transparentColorIndex);
         }
@@ -434,7 +453,7 @@ void parseTableBasedImage() {
     if (prevDisposalMethod == DISPOSAL_BACKGROUND) {
         // Fill portion of imageData with previous background color
         fillImageDataRect(prevBackgroundIndex, rectX, rectY, rectWidth, rectHeight);
-    }    
+    }
     else if (prevDisposalMethod == DISPOSAL_RESTORE) {
         copyImageDataRect(imageDataBU, imageData, rectX, rectY, rectWidth, rectHeight);
     }
@@ -452,11 +471,11 @@ void parseTableBasedImage() {
         if (disposalMethod == DISPOSAL_BACKGROUND) {
             if (transparentColorIndex != NO_TRANSPARENT_INDEX) {
                 prevBackgroundIndex = transparentColorIndex;
-            }    
-            else    {
-                prevBackgroundIndex = lsdBackgroundIndex;   
             }
-        }    
+            else    {
+                prevBackgroundIndex = lsdBackgroundIndex;
+            }
+        }
         else if (disposalMethod == DISPOSAL_RESTORE) {
             copyImageDataRect(imageData, imageDataBU, rectX, rectY, rectWidth, rectHeight);
         }
@@ -507,7 +526,7 @@ int parseData() {
     Serial.println("\nParsing Data Block");
 #endif
 
-    boolean done = false;	
+    boolean done = false;
     while (! done) {
 
         // Determine what kind of data to process
@@ -517,7 +536,7 @@ int parseData() {
             // Parse table based image
             parseTableBasedImage();
 
-        }	
+        }
         else if (b == 0x21) {
             // Parse extension
             b = readByte();
@@ -545,7 +564,7 @@ int parseData() {
                 Serial.println(b, HEX);
                 return ERROR_UNKNOWNCONTROLEXT;
             }
-        }	
+        }
         else	{
             done = true;
 
