@@ -4,20 +4,29 @@
  * This file contains code to parse animated GIF files
  *
  * Written by: Craig A. Lindley
- * Version: 1.1
- * Last Update: 06/18/2014
+ * Version: 1.21
+ * Last Update: 07/04/2014
  */
+
 
 // NOTE: setting this to 1 will cause parsing to fail at the present time
 #define DEBUG 0
+
+#include "SmartMatrix.h"
+extern SmartMatrix matrix;
 
 #include <SdFat.h>
 extern SdFat sd;
 extern SdFile file;
 
+const int WIDTH  = 32;
+const int HEIGHT = 32;
+
 // Defined in LZWFunctions.cpp
 extern void lzw_decode_init (int csize, byte *buf);
 extern void decompressAndDisplayFrame();
+extern byte imageData[1024];
+extern byte imageDataBU[1024];
 
 // Error codes
 #define ERROR_NONE		    0
@@ -31,11 +40,17 @@ extern void decompressAndDisplayFrame();
 #define GIFHDRSIZE 6
 
 // Global GIF specific definitions
-#define GLOBALCOLORTBL     0x80
-#define LOCALCOLORTBL      0x80
-#define LOCALINTERLACEFLAG 0x40
+#define COLORTBLFLAG    0x80
+#define INTERLACEFLAG   0x40
+#define TRANSPARENTFLAG 0x01
 
-#define NO_TRANSPARENT_INDEX 8192
+#define NO_TRANSPARENT_INDEX -1
+
+// Disposal methods
+#define DISPOSAL_NONE       0
+#define DISPOSAL_LEAVE      1
+#define DISPOSAL_BACKGROUND 2
+#define DISPOSAL_RESTORE    3
 
 // RGB data structure
 typedef struct {
@@ -60,11 +75,17 @@ int tbiHeight;
 int tbiPackedBits;
 boolean tbiInterlaced;
 
-int frameCount;
 int frameDelay;
 int transparentColorIndex;
+int prevBackgroundIndex;
+int prevDisposalMethod;
 int disposalMethod;
 int lzwCodeSize;
+boolean keyFrame;
+int rectX;
+int rectY;
+int rectWidth;
+int rectHeight;
 
 int colorCount;
 RGB palette[256];
@@ -95,6 +116,7 @@ int readWord() {
     return (b1 << 8) | b0;
 }
 
+// Read the specified number of bytes into the specified buffer
 int readIntoBuffer(void *buffer, int numberOfBytes) {
 
     int result = file.read(buffer, numberOfBytes);
@@ -102,6 +124,39 @@ int readIntoBuffer(void *buffer, int numberOfBytes) {
         Serial.println("Read error or EOF occurred");
     }
     return result;
+}
+
+// Fill a portion of imageData buffer with a color index
+void fillImageDataRect(byte colorIndex, int x, int y, int width, int height) {
+
+    int yOffset;
+
+    for (int yy = y; yy < height + y; yy++) {
+        yOffset = yy * WIDTH;
+        for (int xx = x; xx < width + x; xx++) {
+            imageData[yOffset + xx] = colorIndex;
+        }
+    }
+}
+
+// Fill entire imageData buffer with a color index
+void fillImageData(byte colorIndex) {
+
+    memset(imageData, colorIndex, sizeof(imageData));
+}
+
+// Copy image data in rect from a src to a dst
+void copyImageDataRect(byte *src, byte *dst, int x, int y, int width, int height) {
+
+    int yOffset, offset;
+
+    for (int yy = y; yy < height + y; yy++) {
+        yOffset = yy * WIDTH;
+        for (int xx = x; xx < width + x; xx++) {
+            offset = yOffset + xx;
+            dst[offset] = src[offset];
+        }
+    }
 }
 
 // Make sure the file is a Gif file
@@ -147,7 +202,7 @@ void parseLogicalScreenDescriptor() {
 void parseGlobalColorTable() {
 
     // Does a global color table exist?
-    if (lsdPackedField & GLOBALCOLORTBL) {
+    if (lsdPackedField & COLORTBLFLAG) {
 
         // A GCT was present determine how many colors it contains
         colorCount = 1 << ((lsdPackedField & 7) + 1);
@@ -160,21 +215,7 @@ void parseGlobalColorTable() {
         // Read color values into the palette array
         int colorTableBytes = sizeof(RGB) * colorCount;
         readIntoBuffer(palette, colorTableBytes);
-
-#if DEBUG == 1
-        // Show the palette values
-        for (int i = 0; i < colorCount; i++) {
-            delay(10);
-            Serial.print(palette[i].Red);
-            Serial.print(" ");
-            Serial.print(palette[i].Green);
-            Serial.print(" ");
-            Serial.print(palette[i].Blue);
-            Serial.println();
-        }
-        Serial.println();
-#endif
-    }
+    }    
 }
 
 // Parse plain text extension and dispose of it
@@ -203,21 +244,30 @@ void parseGraphicControlExtension() {
 #if DEBUG == 1
     Serial.println("\nProcessing Graphic Control Extension");
 #endif
-    readByte();	// Toss length
+    int len = readByte();	// Check length
+    if (len != 4) {
+        Serial.println("Bad graphic control extension");
+    }
 
     int packedBits = readByte();
     frameDelay = readWord();
     transparentColorIndex = readByte();
 
-    if ((packedBits & 0x01) == 0) {
+    if ((packedBits & TRANSPARENTFLAG) == 0) {
         // Indicate no transparent index
         transparentColorIndex = NO_TRANSPARENT_INDEX;
     }
     disposalMethod = (packedBits >> 2) & 7;
+    if (disposalMethod > 3) {
+        disposalMethod = 0;
+        Serial.println("Invalid disposal value");
+    }
 
     readByte();	// Toss block end
 
 #if DEBUG == 1
+    Serial.print("PacketBits: ");
+    Serial.println(packedBits, HEX);
     Serial.print("Frame delay: ");
     Serial.println(frameDelay);
     Serial.print("transparentColorIndex: ");
@@ -315,8 +365,6 @@ void parseTableBasedImage() {
     Serial.println("\nProcessing Table Based Image Descriptor");
 #endif
 
-    frameCount++;
-
     // Parse image descriptor
     tbiImageX = readWord();
     tbiImageY = readWord();
@@ -338,7 +386,7 @@ void parseTableBasedImage() {
 #endif
 
     // Is this image interlaced ?
-    tbiInterlaced = ((tbiPackedBits & LOCALINTERLACEFLAG) != 0);
+    tbiInterlaced = ((tbiPackedBits & INTERLACEFLAG) != 0);
 
 #if DEBUG == 1
     Serial.print("Image interlaced: ");
@@ -346,7 +394,7 @@ void parseTableBasedImage() {
 #endif
 
     // Does this image have a local color table ?
-    boolean localColorTable =  ((tbiPackedBits & LOCALCOLORTBL) != 0);
+    boolean localColorTable =  ((tbiPackedBits & COLORTBLFLAG) != 0);
 
     if (localColorTable) {
         int colorBits = ((tbiPackedBits & 7) + 1);
@@ -360,6 +408,58 @@ void parseTableBasedImage() {
         // Read colors into palette
         int colorTableBytes = sizeof(RGB) * colorCount;
         readIntoBuffer(palette, colorTableBytes);
+    }
+
+    // One time initialization of imageData before first frame
+    if (keyFrame) {
+        if (transparentColorIndex == NO_TRANSPARENT_INDEX) {
+            fillImageData(lsdBackgroundIndex);
+        }    
+        else    {
+            fillImageData(transparentColorIndex);
+        }
+        keyFrame = false;
+
+        rectX = 0;
+        rectY = 0;
+        rectWidth = WIDTH;
+        rectHeight = HEIGHT;
+    }
+    // Don't clear matrix screen for these disposal methods
+    if ((prevDisposalMethod != DISPOSAL_NONE) && (prevDisposalMethod != DISPOSAL_LEAVE)) {
+        matrix.fillScreen({0,0,0});
+    }
+
+    // Process previous disposal method
+    if (prevDisposalMethod == DISPOSAL_BACKGROUND) {
+        // Fill portion of imageData with previous background color
+        fillImageDataRect(prevBackgroundIndex, rectX, rectY, rectWidth, rectHeight);
+    }    
+    else if (prevDisposalMethod == DISPOSAL_RESTORE) {
+        copyImageDataRect(imageDataBU, imageData, rectX, rectY, rectWidth, rectHeight);
+    }
+
+    // Save disposal method for this frame for next time
+    prevDisposalMethod = disposalMethod;
+
+    if (disposalMethod != DISPOSAL_NONE) {
+        // Save dimensions of this frame
+        rectX = tbiImageX;
+        rectY = tbiImageY;
+        rectWidth = tbiWidth;
+        rectHeight = tbiHeight;
+
+        if (disposalMethod == DISPOSAL_BACKGROUND) {
+            if (transparentColorIndex != NO_TRANSPARENT_INDEX) {
+                prevBackgroundIndex = transparentColorIndex;
+            }    
+            else    {
+                prevBackgroundIndex = lsdBackgroundIndex;   
+            }
+        }    
+        else if (disposalMethod == DISPOSAL_RESTORE) {
+            copyImageDataRect(imageData, imageDataBU, rectX, rectY, rectWidth, rectHeight);
+        }
     }
 
     // Read the min LZW code size
@@ -389,8 +489,15 @@ void parseTableBasedImage() {
     // Decompress LZW data and display the frame
     decompressAndDisplayFrame();
 
-    // Delay for specified duration between frames
+    // Make sure there is at least some delay between frames
+    if (frameDelay < 5) {
+        frameDelay = 5;
+    }
     delay(frameDelay * 10);
+
+    // Graphic control extension is for a single frame
+    transparentColorIndex = NO_TRANSPARENT_INDEX;
+    disposalMethod = DISPOSAL_NONE;
 }
 
 // Parse gif data
@@ -450,23 +557,20 @@ int parseData() {
 }
 
 // Attempt to parse the gif file
-int processGIFFile(char *pathname) {
-
-    char pn[30];
+int processGIFFile(const char *pathname) {
 
     // Initialize variables
-    frameCount = 0;
-
-    memset(pn, 0, sizeof(pn));
-    strcpy(pn, pathname);
+    keyFrame = true;
+    prevDisposalMethod = DISPOSAL_NONE;
+    transparentColorIndex = NO_TRANSPARENT_INDEX;
 
     Serial.print("Pathname: ");
-    Serial.println(pn);
-    
+    Serial.println(pathname);
+
     file.close();
 
     // Attempt to open the file for reading
-    if (! file.open(pn)) {
+    if (! file.open(pathname)) {
         Serial.println("Error opening GIF file");
         return ERROR_FILEOPEN;
     }
@@ -497,13 +601,24 @@ int processGIFFile(char *pathname) {
     result = parseGIFFileTerminator();
     file.close();
 
-#if DEBUG == 1
-    Serial.print("Frame count: ");
-    Serial.println(frameCount);
-#endif
     Serial.println("Success");
     return result;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

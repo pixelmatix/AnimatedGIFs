@@ -4,8 +4,8 @@
  * Uses Teensy 3.1 driver written by Louis Beaudoin at pixelmatrix.com
  *
  * Written by: Craig A. Lindley
- * Version: 1.1
- * Last Update: 06/18/2014
+ * Version: 1.2
+ * Last Update: 07/04/2014
  */
 
 #include <math.h>
@@ -17,12 +17,12 @@
 
 // Declared in FilenameFunctions.cpp
 extern int numberOfFiles;
-extern int enumerateGIFFiles(boolean displayFilenames);
-extern void getGIFFilenameByIndex(int index, char *fnBuffer);
-extern void chooseRandomGIFFilename(char *fnBuffer);
+extern int enumerateGIFFiles(const char *directoryName, boolean displayFilenames);
+extern void getGIFFilenameByIndex(const char *directoryName, int index, char *pnBuffer);
+extern void chooseRandomGIFFilename(const char *directoryName, char *pnBuffer);
 
 // Declared in GIFParseFunctions.cpp
-extern int processGIFFile(char * pathname);
+extern int processGIFFile(const char * pathname);
 
 const int defaultBrightness = 50;
 const rgb24 COLOR_BLACK = {
@@ -39,11 +39,13 @@ SmartMatrix matrix;
 // SD card instance
 SdFat sd;
 
+#define GIF_DIRECTORY "/gifs/"
+
 // Setup method runs once, when the sketch starts
 void setup() {
 
     // Seed the random number generator
-    randomSeed(millis());
+    randomSeed(analogRead(14));
 
     Serial.begin(115200);
 
@@ -60,19 +62,21 @@ void setup() {
     matrix.swapBuffers();
 
     // initialize the SD card at full speed
-    if (! sd.begin(SD_CS, SPI_FULL_SPEED)) {
+    if (! sd.begin(SD_CS, SPI_HALF_SPEED)) {
         sd.initErrorHalt();
     }
 
     // Determine how many animated GIF files exist
-    enumerateGIFFiles(true);
+    enumerateGIFFiles(GIF_DIRECTORY, false);
 }
+
 
 void loop() {
 
     unsigned long futureTime;
-    char path[30];
-    char filename[13];
+    char pathname[30];
+
+    int index = random(numberOfFiles);
 
     // Do forever
     while (true) {
@@ -83,19 +87,16 @@ void loop() {
 
         delay(1000);
 
-        // Choose a random animated GIF file from the SD card
-        chooseRandomGIFFilename(filename);
-
-        // Prepare path to that file
-        memset(path, 0, sizeof(path));
-        strcpy(path, "/gifs/");
-        strcat(path, filename);
+        getGIFFilenameByIndex(GIF_DIRECTORY, index++, pathname);
+        if (index >= numberOfFiles) {
+            index = 0;
+        }
 
         // Calculate time in the future to terminate animation
         futureTime = millis() + (DISPLAY_TIME_SECONDS * 1000);
 
         while (futureTime > millis()) {
-            processGIFFile(path);
+            processGIFFile(pathname);
         }
     }
 }

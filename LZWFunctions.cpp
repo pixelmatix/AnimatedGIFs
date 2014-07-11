@@ -6,14 +6,11 @@
  * Written by: Craig A. Lindley, Fabrice Bellard and Steven A. Bennett
  * See my book, "Practical Image Processing in C", John Wiley & Sons, Inc.
  *
- * Version: 1.1
- * Last Update: 06/18/2014
+ * Version: 1.2
+ * Last Update: 07/04/2014
  */
 
 #include "SmartMatrix.h"
-
-const int WIDTH  = 32;
-const int HEIGHT = 32;
 
 extern SmartMatrix matrix;
 
@@ -32,17 +29,18 @@ extern int frameDelay;
 extern int transparentColorIndex;
 extern int disposalMethod;
 
+const int WIDTH  = 32;
+const int HEIGHT = 32;
+
 // RGB data structure
 typedef struct {
     byte Red;
     byte Green;
     byte Blue;
-} 
+}
 RGB;
 
 extern RGB palette[];
-
-#define NO_TRANSPARENT_INDEX 8192
 
 // LZW constants
 // NOTE: LZW_MAXBITS set to 10 to save memory
@@ -80,6 +78,9 @@ unsigned int prefix [LZW_SIZTABLE];
 
 // Buffer image data is decoded into
 byte imageData[1024];
+
+// Backup image data buffer for saving portions of image disposal method == 3
+byte imageDataBU[1024];
 
 // Initialize LZW decoder
 //   csize initial code size in bits
@@ -125,7 +126,7 @@ int lzw_get_code() {
 //   buf 8 bit output buffer
 //   len number of pixels to decode
 //   returns the number of bytes decoded
-int lzw_decode(byte *buf, int len) {	
+int lzw_decode(byte *buf, int len) {
     int l, c, code;
 
     if (end_code < 0) {
@@ -144,7 +145,7 @@ int lzw_decode(byte *buf, int len) {
         if (c == end_code) {
             break;
 
-        }	
+        }
         else if (c == clear_code) {
             cursize = codesize + 1;
             curmask = mask[cursize];
@@ -152,14 +153,14 @@ int lzw_decode(byte *buf, int len) {
             top_slot = 1 << cursize;
             fc= oc= -1;
 
-        }	
+        }
         else	{
 
             code = c;
             if ((code == slot) && (fc >= 0)) {
                 *sp++ = fc;
                 code = oc;
-            }	
+            }
             else if (code >= slot) {
                 break;
             }
@@ -196,43 +197,45 @@ void decompressAndDisplayFrame() {
     // Decode the interlaced LZW data into the image buffer
     if (tbiInterlaced) {
         // Decode every 8th line starting at line 0
-        for (int line = 0; line < tbiHeight; line += 8) {				
-            lzw_decode(imageData + (line * WIDTH), tbiWidth);
-        }			
-        // Decode every 8th line starting at line 4
-        for (int line = 4; line < tbiHeight; line += 8) {				
-            lzw_decode(imageData + (line * WIDTH), tbiWidth);
-        }			
-        // Decode every 4th line starting at line 2
-        for (int line = 2; line < tbiHeight; line += 4) {				
-            lzw_decode(imageData + (line * WIDTH), tbiWidth);
-        }			
-        // Decode every 2nd line starting at line 1
-        for (int line = 1; line < tbiHeight; line += 2) {				
+        for (int line = 0; line < tbiHeight; line += 8) {
             lzw_decode(imageData + (line * WIDTH), tbiWidth);
         }
-    }	
-    else	{			
+        // Decode every 8th line starting at line 4
+        for (int line = 4; line < tbiHeight; line += 8) {
+            lzw_decode(imageData + (line * WIDTH), tbiWidth);
+        }
+        // Decode every 4th line starting at line 2
+        for (int line = 2; line < tbiHeight; line += 4) {
+            lzw_decode(imageData + (line * WIDTH), tbiWidth);
+        }
+        // Decode every 2nd line starting at line 1
+        for (int line = 1; line < tbiHeight; line += 2) {
+            lzw_decode(imageData + (line * WIDTH), tbiWidth);
+        }
+    }
+    else	{
         // Decode the non interlaced LZW data into the image data buffer
-        for (int line = tbiImageY; line < tbiHeight + tbiImageY; line++) {				
+        for (int line = tbiImageY; line < tbiHeight + tbiImageY; line++) {
             lzw_decode(imageData  + (line * WIDTH) + tbiImageX, tbiWidth);
         }
     }
-    // Image data is decompressed, now display it
-    // GIF data stored left to right and top to bottom
-    rgb24 color;
-    byte pixel;
-    int pixelIndex = 0;
-    for (int y = 0; y < HEIGHT; y++) {
-        for (int x = 0; x < WIDTH; x++) {
-            // Get the next pixel
-            pixel = imageData[pixelIndex++];
 
-            // If pixel is transparent, then skip processing it
+    // Image data is decompressed, now display portion of image affected by frame
+
+    rgb24 color;
+    int yOffset, pixel;
+    for (int y = tbiImageY; y < tbiHeight + tbiImageY; y++) {
+        yOffset = y * WIDTH;
+        for (int x = tbiImageX; x < tbiWidth + tbiImageX; x++) {
+            // Get the next pixel
+            pixel = imageData[yOffset + x];
+
+            // Check pixel transparency
             if (pixel == transparentColorIndex) {
                 continue;
             }
 
+            // Pixel not transparent so get color from palette
             color.red   = palette[pixel].Red;
             color.green = palette[pixel].Green;
             color.blue  = palette[pixel].Blue;
@@ -243,11 +246,8 @@ void decompressAndDisplayFrame() {
     }
     // Make animation frame visible
     matrix.swapBuffers();
-
-    if (disposalMethod == 2) {
-        memset(imageData, lsdBackgroundIndex, sizeof(imageData));
-    }
 }
+
 
 
 
