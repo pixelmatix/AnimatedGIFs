@@ -216,20 +216,20 @@ void decompressAndDisplayFrame() {
     // Decode the interlaced LZW data into the image buffer
     if (tbiInterlaced) {
         // Decode every 8th line starting at line 0
-        for (int line = 0; line < tbiHeight; line += 8) {
-            lzw_decode(imageData + (line * WIDTH), tbiWidth);
+        for (int line = tbiImageY + 0; line < tbiHeight + tbiImageY; line += 8) {
+            lzw_decode(imageData + (line * WIDTH) + tbiImageX, tbiWidth);
         }
         // Decode every 8th line starting at line 4
-        for (int line = 4; line < tbiHeight; line += 8) {
-            lzw_decode(imageData + (line * WIDTH), tbiWidth);
+        for (int line = tbiImageY + 4; line < tbiHeight + tbiImageY; line += 8) {
+            lzw_decode(imageData + (line * WIDTH) + tbiImageX, tbiWidth);
         }
         // Decode every 4th line starting at line 2
-        for (int line = 2; line < tbiHeight; line += 4) {
-            lzw_decode(imageData + (line * WIDTH), tbiWidth);
+        for (int line = tbiImageY + 2; line < tbiHeight + tbiImageY; line += 4) {
+            lzw_decode(imageData + (line * WIDTH) + tbiImageX, tbiWidth);
         }
         // Decode every 2nd line starting at line 1
-        for (int line = 1; line < tbiHeight; line += 2) {
-            lzw_decode(imageData + (line * WIDTH), tbiWidth);
+        for (int line = tbiImageY + 1; line < tbiHeight + tbiImageY; line += 2) {
+            lzw_decode(imageData + (line * WIDTH) + tbiImageX, tbiWidth);
         }
     }
     else	{
