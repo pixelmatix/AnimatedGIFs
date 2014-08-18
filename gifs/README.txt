@@ -1,0 +1,1 @@
+Add this /gifs/ directory to the root of the SD Card
