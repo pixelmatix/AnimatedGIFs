@@ -51,15 +51,7 @@ extern int disposalMethod;
 const int WIDTH  = 32;
 const int HEIGHT = 32;
 
-// RGB data structure
-typedef struct {
-    byte Red;
-    byte Green;
-    byte Blue;
-}
-RGB;
-
-extern RGB palette[];
+extern rgb24 palette[];
 
 // LZW constants
 // NOTE: LZW_MAXBITS set to 10 to save memory
@@ -255,9 +247,9 @@ void decompressAndDisplayFrame() {
             }
 
             // Pixel not transparent so get color from palette
-            color.red   = palette[pixel].Red;
-            color.green = palette[pixel].Green;
-            color.blue  = palette[pixel].Blue;
+            color.red   = palette[pixel].red;
+            color.green = palette[pixel].green;
+            color.blue  = palette[pixel].blue;
 
             // Draw the pixel
             matrix.drawPixel(x, y, color);

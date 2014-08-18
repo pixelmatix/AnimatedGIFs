@@ -71,14 +71,6 @@ extern byte imageDataBU[1024];
 #define DISPOSAL_BACKGROUND 2
 #define DISPOSAL_RESTORE    3
 
-// RGB data structure
-typedef struct {
-    byte Red;
-    byte Green;
-    byte Blue;
-}
-RGB;
-
 // Logical screen descriptor attributes
 int lsdWidth;
 int lsdHeight;
@@ -107,7 +99,7 @@ int rectWidth;
 int rectHeight;
 
 int colorCount;
-RGB palette[256];
+rgb24 palette[256];
 
 byte lzwImageData[1024];
 char tempBuffer[260];
@@ -232,7 +224,7 @@ void parseGlobalColorTable() {
         Serial.println(" colors present");
 #endif
         // Read color values into the palette array
-        int colorTableBytes = sizeof(RGB) * colorCount;
+        int colorTableBytes = sizeof(rgb24) * colorCount;
         readIntoBuffer(palette, colorTableBytes);
     }
 }
@@ -425,7 +417,7 @@ void parseTableBasedImage() {
         Serial.println(" colors present");
 #endif
         // Read colors into palette
-        int colorTableBytes = sizeof(RGB) * colorCount;
+        int colorTableBytes = sizeof(rgb24) * colorCount;
         readIntoBuffer(palette, colorTableBytes);
     }
 
