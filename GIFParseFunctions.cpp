@@ -497,14 +497,13 @@ void parseTableBasedImage() {
     // Initialize the LZW decoder for this frame
     lzw_decode_init(lzwCodeSize, lzwImageData);
 
-    // Decompress LZW data and display the frame
-    decompressAndDisplayFrame();
-
     // Make sure there is at least some delay between frames
     if (frameDelay < 5) {
         frameDelay = 5;
     }
-    delay(frameDelay * 10);
+
+    // Decompress LZW data and display the frame
+    decompressAndDisplayFrame();
 
     // Graphic control extension is for a single frame
     transparentColorIndex = NO_TRANSPARENT_INDEX;

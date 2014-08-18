@@ -75,7 +75,6 @@ void setup() {
     // Initialize matrix
     matrix.begin();
     matrix.setBrightness(defaultBrightness);
-    matrix.setColorCorrection(cc24);
 
     // Clear screen
     matrix.fillScreen(COLOR_BLACK);

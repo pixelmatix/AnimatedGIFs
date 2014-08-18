@@ -256,7 +256,12 @@ void decompressAndDisplayFrame() {
         }
     }
     // Make animation frame visible
+#if 1
+    matrix.swapBuffersWithInterpolation_ms(5 * frameDelay * 3, true);
+#else
     matrix.swapBuffers();
+    delay(5 * frameDelay * 3);
+#endif
 }
 
 
