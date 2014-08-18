@@ -256,11 +256,12 @@ void decompressAndDisplayFrame() {
         }
     }
     // Make animation frame visible
+    // normal delay is (5 * frameDelay) - can slow it down more to see effects of interpolation
 #if 1
-    matrix.swapBuffersWithInterpolation_ms(5 * frameDelay * 3, true);
+    matrix.swapBuffersWithInterpolation_ms((5 * frameDelay) * 3, true);
 #else
     matrix.swapBuffers();
-    delay(5 * frameDelay * 3);
+    delay((5 * frameDelay) * 3);
 #endif
 }
 
