@@ -1,10 +1,10 @@
 AnimatedGIFs
 ============
 This example displays 32x32 GIF animations loaded from a SD Card connected to the Teensy 3.1
+
 The GIFs must be 32x32 pixels exactly
 
-Wiring is on the default Teensy 3.1 SPI pins, and chip select can be on any GPIO,
-set by defining SD_CS in the code
+Wiring is on the default Teensy 3.1 SPI pins, and chip select can be on any GPIO (customize by defining SD_CS in the code)
 
 Function     | Pin
 -------------|----
