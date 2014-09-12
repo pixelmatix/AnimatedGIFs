@@ -256,23 +256,18 @@ void decompressAndDisplayFrame() {
         }
     }
     // Make animation frame visible
-    // normal delay is (5 * frameDelay) - can slow it down more to see effects of interpolation
-#if 1
-    matrix.swapBuffersWithInterpolation_ms((5 * frameDelay) * 3, true);
-#else
+    // swapBuffers() call can take up to 1/framerate seconds to return (it waits until a buffer copy is complete)
+    // note the time before calling
+    int nextFrameTime_ms = millis() + (5 * frameDelay);
     matrix.swapBuffers();
-    delay((5 * frameDelay) * 3);
-#endif
+
+    // get the number of milliseconds to delay
+    nextFrameTime_ms -= millis();
+
+    // the space between frames isn't perfect as there is a variable amount of time to process the next frame, but this gets it close
+    if(nextFrameTime_ms > 0)
+        delay(nextFrameTime_ms);
 }
-
-
-
-
-
-
-
-
-
 
 
 

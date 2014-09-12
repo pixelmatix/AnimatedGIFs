@@ -498,8 +498,8 @@ void parseTableBasedImage() {
     lzw_decode_init(lzwCodeSize, lzwImageData);
 
     // Make sure there is at least some delay between frames
-    if (frameDelay < 5) {
-        frameDelay = 5;
+    if (frameDelay < 1) {
+        frameDelay = 1;
     }
 
     // Decompress LZW data and display the frame
