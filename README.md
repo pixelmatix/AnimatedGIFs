@@ -1,8 +1,8 @@
 AnimatedGIFs
 ============
-This example displays 32x32 GIF animations loaded from a SD Card connected to the Teensy 3.1
+This [SmartMatrix Library](http://docs.pixelmatix.com/SmartMatrix/index.html) example displays 32x32 GIF animations loaded from a SD Card connected to the Teensy 3.1 using the [SmartMatrix Shield](http://docs.pixelmatix.com/SmartMatrix/shieldref.html)
 
-The GIFs must be 32x32 pixels exactly
+The GIFs must be 32x32 pixel resolution exactly
 
 Wiring is on the default Teensy 3.1 SPI pins, and chip select can be on any GPIO (customize by defining SD_CS in the code)
 
