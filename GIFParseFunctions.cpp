@@ -4,11 +4,10 @@
  * This file contains code to parse animated GIF files
  *
  * Written by: Craig A. Lindley
- * Version: 1.21
- * Last Update: 07/04/2014
  *
  * Copyright (c) 2014 Craig A. Lindley
- *
+ * Minor modifications by Louis Beaudoin (pixelmatix)
+ * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
  * the Software without restriction, including without limitation the rights to

@@ -4,8 +4,6 @@
  * This file contains code to enumerate and select animated GIF files by name
  *
  * Written by: Craig A. Lindley
- * Version: 1.2
- * Last Update: 07/04/2014
  */
 
 #include <SdFat.h>
