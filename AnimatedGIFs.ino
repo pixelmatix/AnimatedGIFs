@@ -1,5 +1,5 @@
 /*
- * Animated GIFs Display Code for 32x32 RGB LED Smart Pixel Matrix
+ * Animated GIFs Display Code for SmartMatrix and 32x32 RGB LED Panels
  *
  * Uses SmartMatrix Library for Teensy 3.1 written by Louis Beaudoin at pixelmatix.com
  *

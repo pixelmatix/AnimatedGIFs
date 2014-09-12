@@ -1,5 +1,5 @@
 /*
- * Animated GIFs Display Code for 32x32 RGB LED Matrix
+ * Animated GIFs Display Code for SmartMatrix and 32x32 RGB LED Panels
  *
  * This file contains code to enumerate and select animated GIF files by name
  *
@@ -88,7 +88,7 @@ void getGIFFilenameByIndex(const char *directoryName, int index, char *pnBuffer)
 // Return a random animated gif path/filename from the specified directory
 void chooseRandomGIFFilename(const char *directoryName, char *pnBuffer) {
 
-    int index = random(numberOfFiles);    
+    int index = random(numberOfFiles);
     getGIFFilenameByIndex(directoryName, index, pnBuffer);
 }
 

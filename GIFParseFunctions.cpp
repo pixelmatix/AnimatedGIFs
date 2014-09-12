@@ -1,5 +1,5 @@
 /*
- * Animated GIFs Display Code for 32x32 RGB LED Matrix
+ * Animated GIFs Display Code for SmartMatrix and 32x32 RGB LED Panels
  *
  * This file contains code to parse animated GIF files
  *
@@ -7,7 +7,7 @@
  *
  * Copyright (c) 2014 Craig A. Lindley
  * Minor modifications by Louis Beaudoin (pixelmatix)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
  * the Software without restriction, including without limitation the rights to

@@ -1,5 +1,5 @@
 /*
- * Animated GIFs Display Code for 32x32 RGB LED Matrix
+ * Animated GIFs Display Code for SmartMatrix and 32x32 RGB LED Panels
  *
  * This file contains code to decompress the LZW encoded animated GIF data
  *
