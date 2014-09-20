@@ -54,8 +54,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <SdFat.h>
-#include "SmartMatrix_32x32.h"
-#include <FastLED.h>
+#include <SmartMatrix_32x32.h>
 
 #define DISPLAY_TIME_SECONDS 10
 
