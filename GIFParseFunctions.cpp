@@ -27,7 +27,6 @@
  */
 
 
-// NOTE: setting this to 1 will cause parsing to fail at the present time
 #define DEBUG 0
 
 #include "SmartMatrix.h"
@@ -100,7 +99,7 @@ int rectHeight;
 int colorCount;
 rgb24 palette[256];
 
-byte lzwImageData[1024];
+byte lzwImageData[1280];
 char tempBuffer[260];
 
 // Backup the read stream by n bytes
@@ -485,12 +484,22 @@ void parseTableBasedImage() {
     int offset = 0;
     int dataBlockSize = readByte();
     while (dataBlockSize != 0) {
+#if DEBUG == 1
+    Serial.print("datablocksize: ");
+    Serial.println(dataBlockSize);
+#endif
         backUpStream(1);
         dataBlockSize++;
         readIntoBuffer(lzwImageData + offset, dataBlockSize);
         offset += dataBlockSize;
         dataBlockSize = readByte();
     }
+
+#if DEBUG == 1
+    Serial.print("total lzwImageData Size: ");
+    Serial.println(offset);
+#endif
+
     // Process the animation frame for display
 
     // Initialize the LZW decoder for this frame
@@ -519,17 +528,29 @@ int parseData() {
     boolean done = false;
     while (! done) {
 
+#if 0 && DEBUG == 1
+    Serial.println("\nPress Key For Next");
+    while(Serial.read() <= 0);
+#endif
+
         // Determine what kind of data to process
         byte b = readByte();
 
         if (b == 0x2c) {
             // Parse table based image
+#if DEBUG == 1
+    Serial.println("\nParsing Table Based");
+#endif
             parseTableBasedImage();
 
         }
         else if (b == 0x21) {
             // Parse extension
             b = readByte();
+
+#if DEBUG == 1
+    Serial.println("\nParsing Extension");
+#endif
 
             // Determine which kind of extension to parse
             switch (b) {
@@ -556,6 +577,9 @@ int parseData() {
             }
         }
         else	{
+#if DEBUG == 1
+    Serial.println("\nParsing Done");
+#endif
             done = true;
 
             // Push unprocessed byte back into the stream for later processing
