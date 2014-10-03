@@ -27,6 +27,8 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#define DEBUG 0
+
 #include "SmartMatrix.h"
 
 extern SmartMatrix matrix;
@@ -52,8 +54,8 @@ const int HEIGHT = 32;
 extern rgb24 palette[];
 
 // LZW constants
-// NOTE: LZW_MAXBITS set to 10 to save memory
-#define LZW_MAXBITS    10
+// NOTE: LZW_MAXBITS set to 11 (initially 10) to support more GIFs with 6k RAM increase
+#define LZW_MAXBITS    11
 #define LZW_SIZTABLE  (1 << LZW_MAXBITS)
 
 // Masks for 0 .. 16 bits
@@ -188,7 +190,12 @@ int lzw_decode(byte *buf, int len) {
                 if (cursize < LZW_MAXBITS) {
                     top_slot <<= 1;
                     curmask = mask[++cursize];
+                } else {
+#if DEBUG == 1
+                    Serial.println("****** cursize >= MAXBITS *******");
+#endif
                 }
+
             }
         }
     }
