@@ -485,12 +485,24 @@ void parseTableBasedImage() {
     int dataBlockSize = readByte();
     while (dataBlockSize != 0) {
 #if DEBUG == 1
-    Serial.print("datablocksize: ");
+    Serial.print("dataBlockSize: ");
     Serial.println(dataBlockSize);
 #endif
         backUpStream(1);
         dataBlockSize++;
+        // quick fix to prevent a crash if lzwImageData is not large enough
+        if(offset + dataBlockSize <= sizeof(lzwImageData)) {
         readIntoBuffer(lzwImageData + offset, dataBlockSize);
+        } else {
+            int i;
+            // discard the data block that would cause a buffer overflow
+            for(i=0; i<dataBlockSize; i++)
+                file.read();
+#if DEBUG == 1
+            Serial.print("******* Prevented lzwImageData Overflow ******");
+#endif
+        }
+
         offset += dataBlockSize;
         dataBlockSize = readByte();
     }
