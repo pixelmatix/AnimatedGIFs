@@ -26,7 +26,9 @@ In addition to the [SmartMatrix Library](http://docs.pixelmatix.com/SmartMatrix/
 [This tutorial](https://learn.adafruit.com/adafruit-all-about-arduino-libraries-install-use/) explains the basics of installing libraries.
 
 ### Troubleshooting
-Seeing this error means you don't have the SdFat library installed (correctly):
+Seeing this error means the SdFat library isn't installed (correctly):
 `fatal error: SdFat.h: No such file or directory`
 
-It's possible you have the SdFat library folder nested.  Find SdFat.h in the folder where the SdFat library is installed and make sure the path looks like this: `libraries\SdFat\SdFat.h`, not like this: `libraries\SdFat\SdFat\SdFat.h`
+It's possible the SdFat library folder is nested.  Find SdFat.h in the folder where the SdFat library is installed and make sure the path looks like this: `libraries\SdFat\SdFat.h`, not like this: `libraries\SdFat\SdFat\SdFat.h`
+
+It's also possible that the SdFat library is installed in a folder with characters the Arduino IDE doesn't like.  If you download the SdFat .zip from GitHub and try to add it as is, it will be in a folder called `SdFat-master`, and Arduino doesn't like the dash character, and it will also be nested.  Following the steps in the Adafruit tutorial avoids both of these issues.
