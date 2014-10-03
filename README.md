@@ -23,7 +23,7 @@ Issue post in the GitHub repo [here](https://github.com/pixelmatix/AnimatedGIFs/
 ## Libraries
 In addition to the [SmartMatrix Library](http://docs.pixelmatix.com/SmartMatrix/index.html), this sketch requires the [SdFat Library](https://github.com/greiman/SdFat) which can be tricky to install correctly.
 
-[This tutorial](https://learn.adafruit.com/adafruit-all-about-arduino-libraries-install-use/) explains the basics of installing libraries.
+[This Adafruit tutorial](https://learn.adafruit.com/adafruit-all-about-arduino-libraries-install-use/) explains the basics of installing libraries.
 
 ### Troubleshooting
 Seeing this error means the SdFat library isn't installed (correctly):
@@ -31,4 +31,4 @@ Seeing this error means the SdFat library isn't installed (correctly):
 
 It's possible the SdFat library folder is nested.  Find SdFat.h in the folder where the SdFat library is installed and make sure the path looks like this: `libraries\SdFat\SdFat.h`, not like this: `libraries\SdFat\SdFat\SdFat.h`
 
-It's also possible that the SdFat library is installed in a folder with characters the Arduino IDE doesn't like.  If you download the SdFat .zip from GitHub and try to add it as is, it will be in a folder called `SdFat-master`, and Arduino doesn't like the dash character, and it will also be nested.  Following the steps in the Adafruit tutorial avoids both of these issues.
+It's also possible that the SdFat library is installed in a folder with characters the Arduino IDE doesn't like.  If you download the SdFat .zip from GitHub and try to add it as is, the library will be nested in a folder called `SdFat-master`. Arduino doesn't like the dash character and the nested folders.  Following the steps in the Adafruit tutorial avoids both of these issues.
