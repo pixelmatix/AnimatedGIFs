@@ -49,6 +49,12 @@
   * If you find any 32x32 GIFs that won't play properly, please attach them to a new
   * Issue post in the GitHub repo here:
   * https://github.com/pixelmatix/AnimatedGIFs/issues
+  *
+  * This sketch requires the SdFat Library: https://github.com/greiman/SdFat
+  *
+  * If you're having trouble compiling this sketch, view instructions in the README file, which is
+  * available online here: https://github.com/pixelmatix/AnimatedGIFs/
+  *
   */
 
 #include <math.h>
