@@ -97,9 +97,6 @@ void setup() {
 
     Serial.begin(115200);
 
-    // Wait for serial to settle
-    delay(2000);
-
     // Initialize matrix
     matrix.begin();
     matrix.setBrightness(defaultBrightness);
@@ -115,9 +112,7 @@ void setup() {
     }
 
     // Determine how many animated GIF files exist
-    numberOfFiles = enumerateGIFFiles(GIF_DIRECTORY, true);
-    Serial.print(F("number of GIF files: "));
-    Serial.println(numberOfFiles);
+    numberOfFiles = enumerateGIFFiles(GIF_DIRECTORY, false);
 }
 
 
