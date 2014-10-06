@@ -273,6 +273,3 @@ void decompressAndDisplayFrame() {
     if(nextFrameTime_ms > 0)
         delay(nextFrameTime_ms);
 }
-
-
-

@@ -125,7 +125,6 @@ void loop() {
 
     // Do forever
     while (true) {
-
         // Clear screen for new animation
         matrix.fillScreen(COLOR_BLACK);
         matrix.swapBuffers();

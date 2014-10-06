@@ -30,9 +30,10 @@
 #define DEBUG 0
 
 #include <SmartMatrix_32x32.h>
+#include <SD.h>
+
 extern SmartMatrix matrix;
 
-#include <SD.h>
 File file;
 
 const int WIDTH  = 32;

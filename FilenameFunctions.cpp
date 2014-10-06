@@ -66,9 +66,8 @@ void getGIFFilenameByIndex(const char *directoryName, int index, char *pnBuffer)
         return;
 
     File directory = SD.open(directoryName);
-    if (!directory) {
+    if (!directory)
         return;
-    }
 
     File file = directory.openNextFile();
     while (file && (index >= 0)) {
