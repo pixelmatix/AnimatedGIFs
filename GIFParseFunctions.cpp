@@ -32,9 +32,8 @@
 #include "SmartMatrix.h"
 extern SmartMatrix matrix;
 
-#include <SdFat.h>
-extern SdFat sd;
-extern SdFile file;
+#include <SD.h>
+File file;
 
 const int WIDTH  = 32;
 const int HEIGHT = 32;
@@ -104,7 +103,7 @@ char tempBuffer[260];
 
 // Backup the read stream by n bytes
 void backUpStream(int n) {
-    file.seekCur(-n);
+    file.seek(file.position() - n);
 }
 
 // Read a file byte
@@ -174,7 +173,6 @@ boolean parseGifHeader() {
     char buffer[10];
 
     readIntoBuffer(buffer, GIFHDRSIZE);
-
     if ((strncmp(buffer, GIFHDRTAGNORM,  GIFHDRSIZE) != 0) &&
         (strncmp(buffer, GIFHDRTAGNORM1, GIFHDRSIZE) != 0))  {
         return false;
@@ -615,7 +613,8 @@ int processGIFFile(const char *pathname) {
     file.close();
 
     // Attempt to open the file for reading
-    if (! file.open(pathname)) {
+    file = SD.open(pathname);
+    if (!file) {
         Serial.println("Error opening GIF file");
         return ERROR_FILEOPEN;
     }

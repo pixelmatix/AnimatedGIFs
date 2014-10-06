@@ -59,7 +59,8 @@
 
 #include <math.h>
 #include <stdlib.h>
-#include <SdFat.h>
+#include <SPI.h>
+#include <SD.h>
 #include <SmartMatrix_32x32.h>
 
 #define DISPLAY_TIME_SECONDS 10
@@ -75,9 +76,9 @@ extern int processGIFFile(const char * pathname);
 
 const int defaultBrightness = 50;
 const rgb24 COLOR_BLACK = {
-    0, 0, 0};
+    0, 0, 0 };
 
-const int WIDTH  = 32;
+const int WIDTH = 32;
 const int HEIGHT = 32;
 
 // Smart Matrix instance
@@ -85,8 +86,6 @@ SmartMatrix matrix;
 
 // Chip select for SD card on my hardware
 #define SD_CS 15
-// SD card instance
-SdFat sd;
 
 #define GIF_DIRECTORY "/gifs/"
 
@@ -110,12 +109,15 @@ void setup() {
     matrix.swapBuffers();
 
     // initialize the SD card at full speed
-    if (! sd.begin(SD_CS, SPI_HALF_SPEED)) {
-        sd.initErrorHalt();
+    pinMode(SD_CS, OUTPUT);
+    if (!SD.begin(SD_CS)) {
+        return;
     }
 
     // Determine how many animated GIF files exist
-    enumerateGIFFiles(GIF_DIRECTORY, false);
+    numberOfFiles = enumerateGIFFiles(GIF_DIRECTORY, true);
+    Serial.print(F("number of GIF files: "));
+    Serial.println(numberOfFiles);
 }
 
 
@@ -132,8 +134,6 @@ void loop() {
         // Clear screen for new animation
         matrix.fillScreen(COLOR_BLACK);
         matrix.swapBuffers();
-
-        delay(1000);
 
         getGIFFilenameByIndex(GIF_DIRECTORY, index++, pathname);
         if (index >= numberOfFiles) {
