@@ -29,7 +29,7 @@
 
 #define DEBUG 0
 
-#include "SmartMatrix.h"
+#include <SmartMatrix_32x32.h>
 
 extern SmartMatrix matrix;
 
