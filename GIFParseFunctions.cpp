@@ -611,7 +611,8 @@ int processGIFFile(const char *pathname) {
     Serial.print("Pathname: ");
     Serial.println(pathname);
 
-    file.close();
+    if(file)
+        file.close();
 
     // Attempt to open the file for reading
     file = SD.open(pathname);

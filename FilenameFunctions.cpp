@@ -51,6 +51,7 @@ int enumerateGIFFiles(const char *directoryName, boolean displayFilenames) {
         file = directory.openNextFile();
     }
 
+    file.close();
     directory.close();
 
     return numberOfFiles;
@@ -87,6 +88,7 @@ void getGIFFilenameByIndex(const char *directoryName, int index, char *pnBuffer)
         file = directory.openNextFile();
     }
 
+    file.close();
     directory.close();
 }
 
