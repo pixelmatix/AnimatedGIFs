@@ -110,11 +110,22 @@ void setup() {
     // initialize the SD card at full speed
     pinMode(SD_CS, OUTPUT);
     if (!SD.begin(SD_CS)) {
-        return;
+        matrix.scrollText("No SD card", -1);
+        while(1);
     }
 
     // Determine how many animated GIF files exist
     numberOfFiles = enumerateGIFFiles(GIF_DIRECTORY, false);
+
+    if(numberOfFiles < 0) {
+        matrix.scrollText("No gifs directory", -1);
+        while(1);
+    }
+
+    if(!numberOfFiles) {
+        matrix.scrollText("Empty gifs directory", -1);
+        while(1);
+    }
 }
 
 

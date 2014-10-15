@@ -34,7 +34,7 @@ int enumerateGIFFiles(const char *directoryName, boolean displayFilenames) {
 
     File directory = SD.open(directoryName);
     if (!directory) {
-        return 0;
+        return -1;
     }
 
     char * name;
