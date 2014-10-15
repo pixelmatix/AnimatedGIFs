@@ -111,6 +111,7 @@ void setup() {
     pinMode(SD_CS, OUTPUT);
     if (!SD.begin(SD_CS)) {
         matrix.scrollText("No SD card", -1);
+        Serial.println("No SD card");
         while(1);
     }
 
@@ -119,11 +120,13 @@ void setup() {
 
     if(numberOfFiles < 0) {
         matrix.scrollText("No gifs directory", -1);
+        Serial.println("No gifs directory");
         while(1);
     }
 
     if(!numberOfFiles) {
         matrix.scrollText("Empty gifs directory", -1);
+        Serial.println("Empty gifs directory");
         while(1);
     }
 }
