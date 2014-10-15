@@ -74,7 +74,9 @@ extern void chooseRandomGIFFilename(const char *directoryName, char *pnBuffer);
 // Declared in GIFParseFunctions.cpp
 extern int processGIFFile(const char * pathname);
 
-const int defaultBrightness = 50;
+// range 0-255
+const int defaultBrightness = 255;
+
 const rgb24 COLOR_BLACK = {
     0, 0, 0 };
 
@@ -84,7 +86,7 @@ const int HEIGHT = 32;
 // Smart Matrix instance
 SmartMatrix matrix;
 
-// Chip select for SD card on my hardware
+// Chip select for SD card on the SmartMatrix Shield
 #define SD_CS 15
 
 #define GIF_DIRECTORY "/gifs/"
