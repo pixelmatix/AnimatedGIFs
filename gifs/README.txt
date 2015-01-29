@@ -9,7 +9,7 @@ http://nr.reddit.com/r/perfectloops/comments/1u5lnt/infinite_fragments_oc/
 Ran through ezgif.com crop and resize
 
 fight2.gif
-http://nr.reddit.com/r/perfectloops/comments/24w87w/endless_fight_cgi_loop/
+http://animatorsteve.weebly.com/
 Ran through ezgif.com crop and resize
 
 star.gif
