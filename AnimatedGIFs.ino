@@ -141,9 +141,9 @@ void loop() {
 
     // Do forever
     while (true) {
-        // Clear screen for new animation
-        matrix.fillScreen(COLOR_BLACK);
-        matrix.swapBuffers();
+        // Can clear screen for new animation here, but this might cause flicker with short animations
+        // matrix.fillScreen(COLOR_BLACK);
+        // matrix.swapBuffers();
 
         getGIFFilenameByIndex(GIF_DIRECTORY, index++, pathname);
         if (index >= numberOfFiles) {
