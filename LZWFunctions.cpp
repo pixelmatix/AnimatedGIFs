@@ -32,32 +32,8 @@
 #include <Arduino.h>
 #include "GIFDecoder.h"
 
- typedef struct rgb24 {
-    uint8_t red;
-    uint8_t green;
-    uint8_t blue;
-} rgb24;
-
-
-extern int lsdWidth;
-extern int lsdHeight;
-extern int lsdBackgroundIndex;
-
-// Table based image attributes
-extern int tbiImageX;
-extern int tbiImageY;
-extern int tbiWidth;
-extern int tbiHeight;
-extern boolean tbiInterlaced;
-
-extern int frameDelay;
-extern int transparentColorIndex;
-extern int disposalMethod;
-
 const int WIDTH  = 32;
 const int HEIGHT = 32;
-
-extern rgb24 palette[];
 
 // LZW constants
 // NOTE: LZW_MAXBITS set to 11 (initially 10) to support more GIFs with 6k RAM increase

@@ -33,11 +33,6 @@
 #include <SD.h>
 #include "GIFDecoder.h"
 
- typedef struct rgb24 {
-    uint8_t red;
-    uint8_t green;
-    uint8_t blue;
-} rgb24;
 
 
 File file;
@@ -45,11 +40,6 @@ File file;
 const int WIDTH  = 32;
 const int HEIGHT = 32;
 
-// Defined in LZWFunctions.cpp
-extern void lzw_decode_init (int csize, byte *buf);
-extern void decompressAndDisplayFrame();
-extern byte imageData[1024];
-extern byte imageDataBU[1024];
 
 // Error codes
 #define ERROR_NONE		    0

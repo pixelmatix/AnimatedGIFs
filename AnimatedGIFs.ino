@@ -66,15 +66,6 @@
 
 #define DISPLAY_TIME_SECONDS 10
 
-// Declared in FilenameFunctions.cpp
-extern int numberOfFiles;
-extern int enumerateGIFFiles(const char *directoryName, boolean displayFilenames);
-extern void getGIFFilenameByIndex(const char *directoryName, int index, char *pnBuffer);
-extern void chooseRandomGIFFilename(const char *directoryName, char *pnBuffer);
-
-// Declared in GIFParseFunctions.cpp
-extern int processGIFFile(const char * pathname);
-
 // range 0-255
 const int defaultBrightness = 255;
 
@@ -91,6 +82,8 @@ SmartMatrix matrix;
 #define SD_CS 15
 
 #define GIF_DIRECTORY "/gifs/"
+
+int num_files;
 
 void screenClearCallback(void) {
   matrix.fillScreen({0,0,0});
@@ -133,15 +126,15 @@ void setup() {
     }
 
     // Determine how many animated GIF files exist
-    numberOfFiles = enumerateGIFFiles(GIF_DIRECTORY, false);
+    num_files = enumerateGIFFiles(GIF_DIRECTORY, false);
 
-    if(numberOfFiles < 0) {
+    if(num_files < 0) {
         matrix.scrollText("No gifs directory", -1);
         Serial.println("No gifs directory");
         while(1);
     }
 
-    if(!numberOfFiles) {
+    if(!num_files) {
         matrix.scrollText("Empty gifs directory", -1);
         Serial.println("Empty gifs directory");
         while(1);
@@ -154,7 +147,7 @@ void loop() {
     unsigned long futureTime;
     char pathname[30];
 
-    int index = random(numberOfFiles);
+    int index = random(num_files);
 
     // Do forever
     while (true) {
@@ -163,7 +156,7 @@ void loop() {
         // matrix.swapBuffers();
 
         getGIFFilenameByIndex(GIF_DIRECTORY, index++, pathname);
-        if (index >= numberOfFiles) {
+        if (index >= num_files) {
             index = 0;
         }
 
