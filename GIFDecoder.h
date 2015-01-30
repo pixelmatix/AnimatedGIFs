@@ -27,6 +27,7 @@ int processGIFFile(const char * pathname);
 #endif
 
 void lzw_decode_init (int csize, byte *buf);
+int lzw_decode(byte *buf, int len);
 void decompressAndDisplayFrame();
 extern byte imageData[1024];
 extern byte imageDataBU[1024];

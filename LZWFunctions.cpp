@@ -75,17 +75,6 @@ byte imageData[1024];
 // Backup image data buffer for saving portions of image disposal method == 3
 byte imageDataBU[1024];
 
-callback updateScreenCallback;
-pixel_callback drawPixelCallback;
-
-void setUpdateScreenCallback(callback f) {
-    updateScreenCallback = f;
-}
-
-void setDrawPixelCallback(pixel_callback f) {
-    drawPixelCallback = f;
-}
-
 // Initialize LZW decoder
 //   csize initial code size in bits
 //   buf input data
@@ -195,76 +184,4 @@ int lzw_decode(byte *buf, int len) {
     end_code = -1;
 the_end:
     return len - l;
-}
-
-// Decompress LZW data and display animation frame
-void decompressAndDisplayFrame() {
-
-    // Each pixel of image is 8 bits and is an index into the palette
-
-        // How the image is decoded depends upon whether it is interlaced or not
-    // Decode the interlaced LZW data into the image buffer
-    if (tbiInterlaced) {
-        // Decode every 8th line starting at line 0
-        for (int line = tbiImageY + 0; line < tbiHeight + tbiImageY; line += 8) {
-            lzw_decode(imageData + (line * WIDTH) + tbiImageX, tbiWidth);
-        }
-        // Decode every 8th line starting at line 4
-        for (int line = tbiImageY + 4; line < tbiHeight + tbiImageY; line += 8) {
-            lzw_decode(imageData + (line * WIDTH) + tbiImageX, tbiWidth);
-        }
-        // Decode every 4th line starting at line 2
-        for (int line = tbiImageY + 2; line < tbiHeight + tbiImageY; line += 4) {
-            lzw_decode(imageData + (line * WIDTH) + tbiImageX, tbiWidth);
-        }
-        // Decode every 2nd line starting at line 1
-        for (int line = tbiImageY + 1; line < tbiHeight + tbiImageY; line += 2) {
-            lzw_decode(imageData + (line * WIDTH) + tbiImageX, tbiWidth);
-        }
-    }
-    else	{
-        // Decode the non interlaced LZW data into the image data buffer
-        for (int line = tbiImageY; line < tbiHeight + tbiImageY; line++) {
-            lzw_decode(imageData  + (line * WIDTH) + tbiImageX, tbiWidth);
-        }
-    }
-
-    // Image data is decompressed, now display portion of image affected by frame
-
-    rgb24 color;
-    int yOffset, pixel;
-    for (int y = tbiImageY; y < tbiHeight + tbiImageY; y++) {
-        yOffset = y * WIDTH;
-        for (int x = tbiImageX; x < tbiWidth + tbiImageX; x++) {
-            // Get the next pixel
-            pixel = imageData[yOffset + x];
-
-            // Check pixel transparency
-            if (pixel == transparentColorIndex) {
-                continue;
-            }
-
-            // Pixel not transparent so get color from palette
-            color.red   = palette[pixel].red;
-            color.green = palette[pixel].green;
-            color.blue  = palette[pixel].blue;
-
-            // Draw the pixel
-            if(drawPixelCallback)
-                (*drawPixelCallback)(x, y, color.red, color.green, color.blue);
-        }
-    }
-    // Make animation frame visible
-    // swapBuffers() call can take up to 1/framerate seconds to return (it waits until a buffer copy is complete)
-    // note the time before calling
-    int nextFrameTime_ms = millis() + (10 * frameDelay);
-    if(updateScreenCallback)
-        (*updateScreenCallback)();
-
-    // get the number of milliseconds to delay
-    nextFrameTime_ms -= millis();
-
-    // the space between frames isn't perfect as there is a variable amount of time to process the next frame, but this gets it close
-    if(nextFrameTime_ms > 0)
-        delay(nextFrameTime_ms);
 }
