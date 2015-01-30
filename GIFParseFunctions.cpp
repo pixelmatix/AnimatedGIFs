@@ -98,8 +98,13 @@ rgb24 palette[256];
 byte lzwImageData[1280];
 char tempBuffer[260];
 
-callback screenClearCallback;
+// Buffer image data is decoded into
+byte imageData[1024];
 
+// Backup image data buffer for saving portions of image disposal method == 3
+byte imageDataBU[1024];
+
+callback screenClearCallback;
 callback updateScreenCallback;
 pixel_callback drawPixelCallback;
 

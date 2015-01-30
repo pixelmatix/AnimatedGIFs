@@ -69,12 +69,6 @@ byte stack  [LZW_SIZTABLE];
 byte suffix [LZW_SIZTABLE];
 unsigned int prefix [LZW_SIZTABLE];
 
-// Buffer image data is decoded into
-byte imageData[1024];
-
-// Backup image data buffer for saving portions of image disposal method == 3
-byte imageDataBU[1024];
-
 // Initialize LZW decoder
 //   csize initial code size in bits
 //   buf input data
