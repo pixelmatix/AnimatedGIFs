@@ -29,10 +29,16 @@
 
 #define DEBUG 0
 
-#include <SmartMatrix_32x32.h>
+#include "Arduino.h"
 #include <SD.h>
+#include "GIFDecoder.h"
 
-extern SmartMatrix matrix;
+ typedef struct rgb24 {
+    uint8_t red;
+    uint8_t green;
+    uint8_t blue;
+} rgb24;
+
 
 File file;
 
@@ -101,6 +107,12 @@ rgb24 palette[256];
 
 byte lzwImageData[1280];
 char tempBuffer[260];
+
+callback screenClearCallback;
+
+void setScreenClearCallback(callback f) {
+    screenClearCallback = f;
+}
 
 // Backup the read stream by n bytes
 void backUpStream(int n) {
@@ -435,7 +447,8 @@ void parseTableBasedImage() {
     }
     // Don't clear matrix screen for these disposal methods
     if ((prevDisposalMethod != DISPOSAL_NONE) && (prevDisposalMethod != DISPOSAL_LEAVE)) {
-        matrix.fillScreen({0,0,0});
+        if(screenClearCallback)
+            (*screenClearCallback)();
     }
 
     // Process previous disposal method

@@ -29,9 +29,15 @@
 
 #define DEBUG 0
 
-#include <SmartMatrix_32x32.h>
+#include "Arduino.h"
+#include "GIFDecoder.h"
 
-extern SmartMatrix matrix;
+ typedef struct rgb24 {
+    uint8_t red;
+    uint8_t green;
+    uint8_t blue;
+} rgb24;
+
 
 extern int lsdWidth;
 extern int lsdHeight;
@@ -257,14 +263,16 @@ void decompressAndDisplayFrame() {
             color.blue  = palette[pixel].blue;
 
             // Draw the pixel
-            matrix.drawPixel(x, y, color);
+            if(drawPixelCallback)
+                (*drawPixelCallback)(x, y, color.red, color.green, color.blue);
         }
     }
     // Make animation frame visible
     // swapBuffers() call can take up to 1/framerate seconds to return (it waits until a buffer copy is complete)
     // note the time before calling
     int nextFrameTime_ms = millis() + (10 * frameDelay);
-    matrix.swapBuffers();
+    if(updateScreenCallback)
+        (*updateScreenCallback)();
 
     // get the number of milliseconds to delay
     nextFrameTime_ms -= millis();

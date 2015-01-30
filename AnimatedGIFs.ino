@@ -62,6 +62,7 @@
 #include <SPI.h>
 #include <SD.h>
 #include <SmartMatrix_32x32.h>
+#include "GIFDecoder.h"
 
 #define DISPLAY_TIME_SECONDS 10
 
@@ -91,8 +92,24 @@ SmartMatrix matrix;
 
 #define GIF_DIRECTORY "/gifs/"
 
+void screenClearCallback(void) {
+  matrix.fillScreen({0,0,0});
+}
+
+void updateScreenCallback(void) {
+  matrix.swapBuffers();
+}
+
+void drawPixelCallback(int16_t x, int16_t y, uint8_t red, uint8_t green, uint8_t blue) {
+  matrix.drawPixel(x, y, {red, green, blue});
+}
+
 // Setup method runs once, when the sketch starts
 void setup() {
+
+    setScreenClearCallback(screenClearCallback);
+    setUpdateScreenCallback(updateScreenCallback);
+    setDrawPixelCallback(drawPixelCallback);
 
     // Seed the random number generator
     randomSeed(analogRead(14));
