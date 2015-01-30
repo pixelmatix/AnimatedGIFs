@@ -29,7 +29,7 @@
 
 #define DEBUG 0
 
-#include "Arduino.h"
+#include <Arduino.h>
 #include "GIFDecoder.h"
 
  typedef struct rgb24 {
@@ -98,6 +98,17 @@ byte imageData[1024];
 
 // Backup image data buffer for saving portions of image disposal method == 3
 byte imageDataBU[1024];
+
+callback updateScreenCallback;
+pixel_callback drawPixelCallback;
+
+void setUpdateScreenCallback(callback f) {
+    updateScreenCallback = f;
+}
+
+void setDrawPixelCallback(pixel_callback f) {
+    drawPixelCallback = f;
+}
 
 // Initialize LZW decoder
 //   csize initial code size in bits

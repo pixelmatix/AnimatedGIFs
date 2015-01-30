@@ -29,7 +29,7 @@
 
 #define DEBUG 0
 
-#include "Arduino.h"
+#include <Arduino.h>
 #include <SD.h>
 #include "GIFDecoder.h"
 
