@@ -72,9 +72,6 @@ const int defaultBrightness = 255;
 const rgb24 COLOR_BLACK = {
     0, 0, 0 };
 
-const int WIDTH = 32;
-const int HEIGHT = 32;
-
 // Smart Matrix instance
 SmartMatrix matrix;
 
