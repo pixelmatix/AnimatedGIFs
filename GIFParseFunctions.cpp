@@ -37,6 +37,7 @@ File file;
 
 const int WIDTH  = 32;
 const int HEIGHT = 32;
+// maximum bounds of the decoded GIF (dimensions of imageData buffer)
 
 // Error codes
 #define ERROR_NONE		           0
@@ -92,15 +93,15 @@ int rectHeight;
 int colorCount;
 rgb24 palette[256];
 
-// 1024 is bitmap size which should be maximum, but in practice data can be larger
-byte lzwImageData[1024 + 256];
+// in practice data can be larger than max raw bitmap size
+byte lzwImageData[WIDTH * HEIGHT + (WIDTH*HEIGHT/4)];
 char tempBuffer[260];
 
 // Buffer image data is decoded into
-byte imageData[1024];
+byte imageData[WIDTH * HEIGHT];
 
 // Backup image data buffer for saving portions of image disposal method == 3
-byte imageDataBU[1024];
+byte imageDataBU[WIDTH * HEIGHT];
 
 callback screenClearCallback;
 callback updateScreenCallback;
