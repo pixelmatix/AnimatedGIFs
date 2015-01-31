@@ -171,7 +171,7 @@ void fillImageData(byte colorIndex) {
 }
 
 // Copy image data in rect from a src to a dst
-void copyImageDataRect(byte *src, byte *dst, int x, int y, int width, int height) {
+void copyImageDataRect(byte *dst, byte *src, int x, int y, int width, int height) {
 
     int yOffset, offset;
 
@@ -461,7 +461,7 @@ void parseTableBasedImage() {
         fillImageDataRect(prevBackgroundIndex, rectX, rectY, rectWidth, rectHeight);
     }
     else if (prevDisposalMethod == DISPOSAL_RESTORE) {
-        copyImageDataRect(imageDataBU, imageData, rectX, rectY, rectWidth, rectHeight);
+        copyImageDataRect(imageData, imageDataBU, rectX, rectY, rectWidth, rectHeight);
     }
 
     // Save disposal method for this frame for next time
@@ -483,7 +483,7 @@ void parseTableBasedImage() {
             }
         }
         else if (disposalMethod == DISPOSAL_RESTORE) {
-            copyImageDataRect(imageData, imageDataBU, rectX, rectY, rectWidth, rectHeight);
+            copyImageDataRect(imageDataBU, imageData, rectX, rectY, rectWidth, rectHeight);
         }
     }
 
