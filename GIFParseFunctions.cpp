@@ -33,18 +33,15 @@
 #include <SD.h>
 #include "GIFDecoder.h"
 
-
-
 File file;
 
 const int WIDTH  = 32;
 const int HEIGHT = 32;
 
-
 // Error codes
-#define ERROR_NONE		    0
-#define ERROR_FILEOPEN		   -1
-#define ERROR_FILENOTGIF	   -2
+#define ERROR_NONE		           0
+#define ERROR_FILEOPEN		       -1
+#define ERROR_FILENOTGIF	       -2
 #define ERROR_BADGIFFORMAT         -3
 #define ERROR_UNKNOWNCONTROLEXT	   -4
 
