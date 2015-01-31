@@ -715,14 +715,9 @@ void decompressAndDisplayFrame() {
                 continue;
             }
 
-            // Pixel not transparent so get color from palette
-            color.red   = palette[pixel].red;
-            color.green = palette[pixel].green;
-            color.blue  = palette[pixel].blue;
-
-            // Draw the pixel
+            // Pixel not transparent so get color from palette and draw the pixel
             if(drawPixelCallback)
-                (*drawPixelCallback)(x, y, color.red, color.green, color.blue);
+                (*drawPixelCallback)(x, y, palette[pixel].red, palette[pixel].green, palette[pixel].blue);
         }
     }
     // Make animation frame visible

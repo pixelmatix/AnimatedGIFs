@@ -32,9 +32,6 @@
 #include <Arduino.h>
 #include "GIFDecoder.h"
 
-const int WIDTH  = 32;
-const int HEIGHT = 32;
-
 // LZW constants
 // NOTE: LZW_MAXBITS set to 11 (initially 10) to support more GIFs with 6k RAM increase
 #define LZW_MAXBITS    11
