@@ -92,7 +92,8 @@ int rectHeight;
 int colorCount;
 rgb24 palette[256];
 
-byte lzwImageData[1280];
+// 1024 is bitmap size which should be maximum, but in practice data can be larger
+byte lzwImageData[1024 + 256];
 char tempBuffer[260];
 
 // Buffer image data is decoded into
