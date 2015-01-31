@@ -122,7 +122,7 @@ int lzw_decode(byte *buf, int len) {
         while (sp > stack) {
             *buf++ = *(--sp);
             if ((--l) == 0) {
-                goto the_end;
+                return len;
             }
         }
         c = lzw_get_code();
@@ -173,6 +173,5 @@ int lzw_decode(byte *buf, int len) {
         }
     }
     end_code = -1;
-the_end:
     return len - l;
 }
