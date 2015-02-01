@@ -61,37 +61,57 @@
 #include <stdlib.h>
 #include <SPI.h>
 #include <SD.h>
-#include <SmartMatrix_32x32.h>
+#include <Adafruit_NeoPixel.h>
 #include "GIFDecoder.h"
 
 #define DISPLAY_TIME_SECONDS 10
 
 // range 0-255
-const int defaultBrightness = 255;
+const int defaultBrightness = 40;
 
 const rgb24 COLOR_BLACK = {
     0, 0, 0 };
 
-// Smart Matrix instance
-SmartMatrix matrix;
+Adafruit_NeoPixel strip = Adafruit_NeoPixel(1024, 2, NEO_GRB + NEO_KHZ800);
 
 // Chip select for SD card on the SmartMatrix Shield
-#define SD_CS 15
+#define SD_CS 10
 
 #define GIF_DIRECTORY "/gifs/"
 
 int num_files;
 
+uint32_t getIndex(uint32_t x, uint32_t y)
+{
+  uint32_t index;
+  if (y == 0)
+  {
+    index = 31 - x;
+  }
+  else if (y % 2 != 0)
+  {
+    index = y * 32 + x;
+  }
+  else
+  {
+    index = (y * 32 + 31) - x;
+  }
+  return index;
+}
+
 void screenClearCallback(void) {
-  matrix.fillScreen({0,0,0});
+  for (int i=0; i<1024; i++)
+  {
+    strip.setPixelColor(i, strip.Color(0, 0, 0));
+  }
 }
 
 void updateScreenCallback(void) {
-  matrix.swapBuffers();
+  strip.show();
 }
 
 void drawPixelCallback(int16_t x, int16_t y, uint8_t red, uint8_t green, uint8_t blue) {
-  matrix.drawPixel(x, y, {red, green, blue});
+    strip.setPixelColor(getIndex(x, y), strip.Color(red, green, blue));
 }
 
 // Setup method runs once, when the sketch starts
@@ -107,17 +127,14 @@ void setup() {
     Serial.begin(115200);
 
     // Initialize matrix
-    matrix.begin();
-    matrix.setBrightness(defaultBrightness);
-
-    // Clear screen
-    matrix.fillScreen(COLOR_BLACK);
-    matrix.swapBuffers();
+    strip.begin();
+    strip.show(); // Initialize all pixels to 'off'
+    strip.setBrightness(defaultBrightness);
+    strip.setBrightness(1);
 
     // initialize the SD card at full speed
     pinMode(SD_CS, OUTPUT);
     if (!SD.begin(SD_CS)) {
-        matrix.scrollText("No SD card", -1);
         Serial.println("No SD card");
         while(1);
     }
@@ -126,13 +143,11 @@ void setup() {
     num_files = enumerateGIFFiles(GIF_DIRECTORY, false);
 
     if(num_files < 0) {
-        matrix.scrollText("No gifs directory", -1);
         Serial.println("No gifs directory");
         while(1);
     }
 
     if(!num_files) {
-        matrix.scrollText("Empty gifs directory", -1);
         Serial.println("Empty gifs directory");
         while(1);
     }
@@ -149,8 +164,6 @@ void loop() {
     // Do forever
     while (true) {
         // Can clear screen for new animation here, but this might cause flicker with short animations
-        // matrix.fillScreen(COLOR_BLACK);
-        // matrix.swapBuffers();
 
         getGIFFilenameByIndex(GIF_DIRECTORY, index++, pathname);
         if (index >= num_files) {
