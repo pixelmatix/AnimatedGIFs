@@ -37,8 +37,6 @@ int enumerateGIFFiles(const char *directoryName, boolean displayFilenames) {
         return -1;
     }
 
-    char * name;
-
     File file = directory.openNextFile();
     while (file) {
         if (isAnimationFile(file.name())) {
