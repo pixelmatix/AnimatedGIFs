@@ -508,7 +508,7 @@ void parseTableBasedImage() {
         backUpStream(1);
         dataBlockSize++;
         // quick fix to prevent a crash if lzwImageData is not large enough
-        if(offset + dataBlockSize <= sizeof(lzwImageData)) {
+        if(offset + dataBlockSize <= (int)sizeof(lzwImageData)) {
             readIntoBuffer(lzwImageData + offset, dataBlockSize);
         } else {
             int i;
@@ -702,8 +702,6 @@ void decompressAndDisplayFrame() {
     }
 
     // Image data is decompressed, now display portion of image affected by frame
-
-    rgb24 color;
     int yOffset, pixel;
     for (int y = tbiImageY; y < tbiHeight + tbiImageY; y++) {
         yOffset = y * WIDTH;
