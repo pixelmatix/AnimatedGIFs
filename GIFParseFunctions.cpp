@@ -509,7 +509,7 @@ void parseTableBasedImage() {
         dataBlockSize++;
         // quick fix to prevent a crash if lzwImageData is not large enough
         if(offset + dataBlockSize <= sizeof(lzwImageData)) {
-        readIntoBuffer(lzwImageData + offset, dataBlockSize);
+            readIntoBuffer(lzwImageData + offset, dataBlockSize);
         } else {
             int i;
             // discard the data block that would cause a buffer overflow
