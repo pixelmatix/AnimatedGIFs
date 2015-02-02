@@ -6,7 +6,7 @@
  * Written by: Craig A. Lindley
  *
  * Copyright (c) 2014 Craig A. Lindley
- * Minor modifications by Louis Beaudoin (Pixelmatix)
+ * Refactoring by Louis Beaudoin (Pixelmatix)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -28,7 +28,9 @@
 
  /*
   * This example displays 32x32 GIF animations loaded from a SD Card connected to the Teensy 3.1
-  * The GIFs must be 32x32 pixels exactly
+  * The GIFs can be up to 32 pixels in width and height.
+  * This code has been tested with 32x32 pixel and 16x16 pixel GIFs, but is optimized for 32x32 pixel GIFs.
+  *
   * Wiring is on the default Teensy 3.1 SPI pins, and chip select can be on any GPIO,
   * set by defining SD_CS in the code below
   * Function     | Pin
@@ -43,18 +45,13 @@
   *
   * This example is meant to give you an idea of how to add GIF playback to your own sketch.
   * For a project that adds GIF playback with other features, take a look at
-  * Light Appliance:
+  * Light Appliance and Aurora:
   * https://github.com/CraigLindley/LightAppliance
+  * https://github.com/pixelmatix/aurora
   *
-  * If you find any 32x32 GIFs that won't play properly, please attach them to a new
+  * If you find any GIFs that won't play properly, please attach them to a new
   * Issue post in the GitHub repo here:
   * https://github.com/pixelmatix/AnimatedGIFs/issues
-  *
-  * This sketch requires the SdFat Library: https://github.com/greiman/SdFat
-  *
-  * If you're having trouble compiling this sketch, view instructions in the README file, which is
-  * available online here: https://github.com/pixelmatix/AnimatedGIFs/
-  *
   */
 
 #include <math.h>
