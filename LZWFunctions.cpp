@@ -34,7 +34,7 @@
 
 // LZW constants
 // NOTE: LZW_MAXBITS set to 11 (initially 10) to support more GIFs with 6k RAM increase
-#define LZW_MAXBITS    11
+#define LZW_MAXBITS    12
 #define LZW_SIZTABLE  (1 << LZW_MAXBITS)
 
 // Masks for 0 .. 16 bits
@@ -70,7 +70,7 @@ unsigned int prefix [LZW_SIZTABLE];
 // buffers need to be size LZW_SIZTABLE
 byte * stack;       
 byte * suffix;
-unsigned int * prefix;
+uint16_t * prefix;
 #endif
 
 get_buffer_callback getStackCallback;
@@ -96,7 +96,7 @@ void lzw_decode_init (int csize, get_byte_callback f) {
 
     stack = (byte *)(*getStackCallback)();
     suffix = (byte *)(*getSuffixCallback)();
-    prefix = (unsigned int *)(*getPrefixCallback)();
+    prefix = (uint16_t *)(*getPrefixCallback)();
 
     // Initialize read buffer variables
     bbuf = 0;

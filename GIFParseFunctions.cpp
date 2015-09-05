@@ -47,6 +47,7 @@
 #define DEBUG_PROCESSING_TBI_DESC_LZWIMAGEDATA_SIZE         1
 #define DEBUG_PARSING_DATA                                  1
 #define DEBUG_DECOMPRESS_AND_DISPLAY                        1
+
 #define DEBUG_WAIT_FOR_KEY_PRESS                            0
 
 #endif

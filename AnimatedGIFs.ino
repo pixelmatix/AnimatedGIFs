@@ -92,27 +92,28 @@ int num_files;
 
 void screenClearCallback(void) {
   backgroundLayer.fillScreen({0,0,0});
-byte stackBuffer[2*1024];
+byte stackBuffer[4*1024];
 
-// stack is up to 4k
+// stack is up to 4kB
 void * getLZWStackBufferCallback(void) {
-  //return (void*)((void *)backgroundLayer.backBuffer() + 0*1024);
+  //return (void*)((byte *)backgroundLayer.backBuffer() + 0*1024);
   return (void*)stackBuffer;
 }
 
-byte suffixBuffer[2*1024];
+//byte suffixBuffer[4*1024];
 
-// suffix is up to 4k
+// suffix is up to 4kB
 void * getLZWSuffixBufferCallback(void) {
-  return (void*)suffixBuffer;
+  return (void*)((byte *)backgroundLayer.backBuffer() + 8*1024);
+  //return (void*)suffixBuffer;
 }
 
-unsigned int prefixBuffer[2*1024];
+//uint16_t prefixBuffer[4*1024];
 
-// prefix is up to 8k
+// prefix is up to 8kB (4kB * sizeof(uint16_t))
 void * getLZWPrefixBufferCallback(void) {
-  //return (void*)((void *)backgroundLayer.backBuffer() + 4*1024);
-  return (void*)prefixBuffer;
+  return (void*)((byte *)backgroundLayer.backBuffer() + 0*1024);
+  //return (void*)prefixBuffer;
 }
 }
 
