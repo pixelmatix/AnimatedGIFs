@@ -45,8 +45,8 @@
 #define DEBUG_PROCESSING_TBI_DESC_DATABLOCKSIZE             1
 #define DEBUG_PROCESSING_TBI_DESC_LZWIMAGEDATA_OVERFLOW     1
 #define DEBUG_PROCESSING_TBI_DESC_LZWIMAGEDATA_SIZE         1
-#define DEBUG_PARSING_DATA                                  0
-
+#define DEBUG_PARSING_DATA                                  1
+#define DEBUG_DECOMPRESS_AND_DISPLAY                        1
 #define DEBUG_WAIT_FOR_KEY_PRESS                            0
 
 #endif
@@ -115,8 +115,6 @@ int rectHeight;
 int colorCount;
 rgb24 palette[256];
 
-// in practice data can be larger than max raw bitmap size
-byte lzwImageData[WIDTH * HEIGHT + (WIDTH*HEIGHT/4)];
 char tempBuffer[260];
 
 // Buffer image data is decoded into
@@ -155,6 +153,12 @@ int readByte() {
     }
     return b;
 }
+
+byte readByteOnly() {
+
+    return file.read();
+}
+
 
 // Read a file word
 int readWord() {
@@ -516,7 +520,11 @@ void parseTableBasedImage() {
 #if DEBUG == 1 && DEBUG_PROCESSING_TBI_DESC_LZWCODESIZE == 1
     Serial.print("LzwCodeSize: ");
     Serial.println(lzwCodeSize);
+    Serial.println("File Position Before: ");
+    Serial.println(file.position());
 #endif
+
+    unsigned long filePositionBefore = file.position();
 
     // Gather the lzw image data
     // NOTE: the dataBlockSize byte is left in the data as the lzw decoder needs it
@@ -529,18 +537,7 @@ void parseTableBasedImage() {
 #endif
         backUpStream(1);
         dataBlockSize++;
-        // quick fix to prevent a crash if lzwImageData is not large enough
-        if(offset + dataBlockSize <= (int)sizeof(lzwImageData)) {
-            readIntoBuffer(lzwImageData + offset, dataBlockSize);
-        } else {
-            int i;
-            // discard the data block that would cause a buffer overflow
-            for(i=0; i<dataBlockSize; i++)
-                file.read();
-#if DEBUG == 1 && DEBUG_PROCESSING_TBI_DESC_LZWIMAGEDATA_OVERFLOW == 1
-            Serial.print("******* Prevented lzwImageData Overflow ******");
-#endif
-        }
+        file.seek(file.position() + dataBlockSize);
 
         offset += dataBlockSize;
         dataBlockSize = readByte();
@@ -549,12 +546,19 @@ void parseTableBasedImage() {
 #if DEBUG == 1 && DEBUG_PROCESSING_TBI_DESC_LZWIMAGEDATA_SIZE == 1
     Serial.print("total lzwImageData Size: ");
     Serial.println(offset);
+    Serial.println("File Position Test: ");
+    Serial.println(file.position());
 #endif
+
+    // this is the position where GIF decoding needs to pick up after decompressing frame
+    unsigned long filePositionAfter = file.position();
+
+    file.seek(filePositionBefore);
 
     // Process the animation frame for display
 
     // Initialize the LZW decoder for this frame
-    lzw_decode_init(lzwCodeSize, lzwImageData);
+    lzw_decode_init(lzwCodeSize, readByteOnly);
 
     // Make sure there is at least some delay between frames
     if (frameDelay < 1) {
@@ -562,7 +566,7 @@ void parseTableBasedImage() {
     }
 
     // Decompress LZW data and display the frame
-    decompressAndDisplayFrame();
+    decompressAndDisplayFrame(filePositionAfter);
 
     // Graphic control extension is for a single frame
     transparentColorIndex = NO_TRANSPARENT_INDEX;
@@ -692,7 +696,7 @@ int processGIFFile(const char *pathname) {
 }
 
 // Decompress LZW data and display animation frame
-void decompressAndDisplayFrame() {
+void decompressAndDisplayFrame(unsigned long filePositionAfter) {
 
     // Each pixel of image is 8 bits and is an index into the palette
 
@@ -722,6 +726,14 @@ void decompressAndDisplayFrame() {
             lzw_decode(imageData  + (line * WIDTH) + tbiImageX, tbiWidth);
         }
     }
+
+#if DEBUG == 1 && DEBUG_DECOMPRESS_AND_DISPLAY == 1
+    Serial.println("File Position After: ");
+    Serial.println(file.position());
+#endif
+
+    // LZW doesn't parse through all the data, manually set position
+    file.seek(filePositionAfter);
 
     // Image data is decompressed, now display portion of image affected by frame
     int yOffset, pixel;
