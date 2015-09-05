@@ -47,7 +47,6 @@ unsigned int mask[17] = {
 };
 
 // LZW variables
-byte *pbuf;
 int bbits;
 int bbuf;
 int cursize;                // The current code size
@@ -62,6 +61,7 @@ int slot;                   // Last read code
 int fc, oc;
 int bs;                     // Current buffer size for GIF
 byte *sp;
+get_byte_callback getByteCallback;
 byte stack  [LZW_SIZTABLE];
 byte suffix [LZW_SIZTABLE];
 unsigned int prefix [LZW_SIZTABLE];
@@ -69,10 +69,11 @@ unsigned int prefix [LZW_SIZTABLE];
 // Initialize LZW decoder
 //   csize initial code size in bits
 //   buf input data
-void lzw_decode_init (int csize, byte *buf) {
+void lzw_decode_init (int csize, get_byte_callback f) {
+
+    getByteCallback = f;
 
     // Initialize read buffer variables
-    pbuf = buf;
     bbuf = 0;
     bbits = 0;
     bs = 0;
@@ -94,9 +95,9 @@ int lzw_get_code() {
 
     while (bbits < cursize) {
         if (!bs) {
-            bs = *pbuf++;
+            bs = (*getByteCallback)();
         }
-        bbuf |= (*pbuf++) << bbits;
+        bbuf |= (*getByteCallback)() << bbits;
         bbits += 8;
         bs--;
     }
