@@ -92,6 +92,28 @@ int num_files;
 
 void screenClearCallback(void) {
   backgroundLayer.fillScreen({0,0,0});
+byte stackBuffer[2*1024];
+
+// stack is up to 4k
+void * getLZWStackBufferCallback(void) {
+  //return (void*)((void *)backgroundLayer.backBuffer() + 0*1024);
+  return (void*)stackBuffer;
+}
+
+byte suffixBuffer[2*1024];
+
+// suffix is up to 4k
+void * getLZWSuffixBufferCallback(void) {
+  return (void*)suffixBuffer;
+}
+
+unsigned int prefixBuffer[2*1024];
+
+// prefix is up to 8k
+void * getLZWPrefixBufferCallback(void) {
+  //return (void*)((void *)backgroundLayer.backBuffer() + 4*1024);
+  return (void*)prefixBuffer;
+}
 }
 
 void updateScreenCallback(void) {
@@ -107,6 +129,10 @@ void setup() {
     setScreenClearCallback(screenClearCallback);
     setUpdateScreenCallback(updateScreenCallback);
     setDrawPixelCallback(drawPixelCallback);
+
+    setGetStackCallback(getLZWStackBufferCallback);
+    setGetSuffixCallback(getLZWSuffixBufferCallback);
+    setGetPrefixCallback(getLZWPrefixBufferCallback);
 
     // Seed the random number generator
     randomSeed(analogRead(14));
