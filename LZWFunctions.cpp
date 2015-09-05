@@ -112,6 +112,7 @@ int lzw_get_code() {
 //   returns the number of bytes decoded
 int lzw_decode(byte *buf, int len) {
     int l, c, code;
+    unsigned char debugMessagePrinted = 0;
 
     if (end_code < 0) {
         return 0;
@@ -165,7 +166,10 @@ int lzw_decode(byte *buf, int len) {
                     curmask = mask[++cursize];
                 } else {
 #if DEBUG == 1
-                    Serial.println("****** cursize >= MAXBITS *******");
+                    if(!debugMessagePrinted) {
+                        debugMessagePrinted = 1;
+                        Serial.println("****** cursize >= MAXBITS *******");
+                    }
 #endif
                 }
 

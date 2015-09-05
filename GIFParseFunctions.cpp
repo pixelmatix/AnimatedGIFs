@@ -29,6 +29,28 @@
 
 #define DEBUG 0
 
+#if DEBUG == 1
+#define DEBUG_SCREEN_DESCRIPTOR                             0
+#define DEBUG_GLOBAL_COLOR_TABLE                            0
+#define DEBUG_PROCESSING_PLAIN_TEXT_EXT                     0
+#define DEBUG_PROCESSING_GRAPHIC_CONTROL_EXT                0
+#define DEBUG_PROCESSING_APP_EXT                            0
+#define DEBUG_PROCESSING_COMMENT_EXT                        0
+#define DEBUG_PROCESSING_FILE_TERM                          0
+#define DEBUG_PROCESSING_TABLE_IMAGE_DESC                   0
+#define DEBUG_PROCESSING_TBI_DESC_START                     0
+#define DEBUG_PROCESSING_TBI_DESC_INTERLACED                0
+#define DEBUG_PROCESSING_TBI_DESC_LOCAL_COLOR_TABLE         0
+#define DEBUG_PROCESSING_TBI_DESC_LZWCODESIZE               1
+#define DEBUG_PROCESSING_TBI_DESC_DATABLOCKSIZE             1
+#define DEBUG_PROCESSING_TBI_DESC_LZWIMAGEDATA_OVERFLOW     1
+#define DEBUG_PROCESSING_TBI_DESC_LZWIMAGEDATA_SIZE         1
+#define DEBUG_PARSING_DATA                                  0
+
+#define DEBUG_WAIT_FOR_KEY_PRESS                            0
+
+#endif
+
 #include <Arduino.h>
 #include <SD.h>
 #include "GIFDecoder.h"
@@ -209,7 +231,7 @@ void parseLogicalScreenDescriptor() {
     lsdBackgroundIndex = readByte();
     lsdAspectRatio = readByte();
 
-#if DEBUG == 1
+#if DEBUG == 1 && DEBUG_SCREEN_DESCRIPTOR == 1
     Serial.print("lsdWidth: ");
     Serial.println(lsdWidth);
     Serial.print("lsdHeight: ");
@@ -232,7 +254,7 @@ void parseGlobalColorTable() {
         // A GCT was present determine how many colors it contains
         colorCount = 1 << ((lsdPackedField & 7) + 1);
 
-#if DEBUG == 1
+#if DEBUG == 1 && DEBUG_GLOBAL_COLOR_TABLE == 1
         Serial.print("Global color table with ");
         Serial.print(colorCount);
         Serial.println(" colors present");
@@ -246,7 +268,7 @@ void parseGlobalColorTable() {
 // Parse plain text extension and dispose of it
 void parsePlainTextExtension() {
 
-#if DEBUG == 1
+#if DEBUG == 1 && DEBUG_PROCESSING_PLAIN_TEXT_EXT == 1
     Serial.println("\nProcessing Plain Text Extension");
 #endif
     // Read plain text header length
@@ -266,7 +288,7 @@ void parsePlainTextExtension() {
 // Parse a graphic control extension
 void parseGraphicControlExtension() {
 
-#if DEBUG == 1
+#if DEBUG == 1 && DEBUG_PROCESSING_GRAPHIC_CONTROL_EXT == 1
     Serial.println("\nProcessing Graphic Control Extension");
 #endif
     int len = readByte();	// Check length
@@ -290,7 +312,7 @@ void parseGraphicControlExtension() {
 
     readByte();	// Toss block end
 
-#if DEBUG == 1
+#if DEBUG == 1 && DEBUG_PROCESSING_GRAPHIC_CONTROL_EXT == 1
     Serial.print("PacketBits: ");
     Serial.println(packedBits, HEX);
     Serial.print("Frame delay: ");
@@ -307,7 +329,7 @@ void parseApplicationExtension() {
 
     memset(tempBuffer, 0, sizeof(tempBuffer));
 
-#if DEBUG == 1
+#if DEBUG == 1 && DEBUG_PROCESSING_APP_EXT == 1
     Serial.println("\nProcessing Application Extension");
 #endif
 
@@ -317,7 +339,7 @@ void parseApplicationExtension() {
     // Read app data
     readIntoBuffer(tempBuffer, len);
 
-#if DEBUG == 1
+#if DEBUG == 1 && DEBUG_PROCESSING_APP_EXT == 1
     // Conditionally display the application extension string
     if (strlen(tempBuffer) != 0) {
         Serial.print("Application Extension: ");
@@ -336,7 +358,7 @@ void parseApplicationExtension() {
 // Parse comment extension
 void parseCommentExtension() {
 
-#if DEBUG == 1
+#if DEBUG == 1 && DEBUG_PROCESSING_COMMENT_EXT == 1
     Serial.println("\nProcessing Comment Extension");
 #endif
 
@@ -349,7 +371,7 @@ void parseCommentExtension() {
         // Read len bytes into buffer
         readIntoBuffer(tempBuffer, len);
 
-#if DEBUG == 1
+#if DEBUG == 1 && DEBUG_PROCESSING_COMMENT_EXT == 1
         // Display the comment extension string
         if (strlen(tempBuffer) != 0) {
             Serial.print("Comment Extension: ");
@@ -364,14 +386,14 @@ void parseCommentExtension() {
 // Parse file terminator
 int parseGIFFileTerminator() {
 
-#if DEBUG == 1
+#if DEBUG == 1 && DEBUG_PROCESSING_FILE_TERM == 1
     Serial.println("\nProcessing file terminator");
 #endif
 
     byte b = readByte();
     if (b != 0x3B) {
 
-#if DEBUG == 1
+#if DEBUG == 1 && DEBUG_PROCESSING_FILE_TERM == 1
         Serial.print("Terminator byte: ");
         Serial.println(b, HEX);
 #endif
@@ -386,7 +408,7 @@ int parseGIFFileTerminator() {
 // Parse table based image data
 void parseTableBasedImage() {
 
-#if DEBUG == 1
+#if DEBUG == 1 && DEBUG_PROCESSING_TBI_DESC_START == 1
     Serial.println("\nProcessing Table Based Image Descriptor");
 #endif
 
@@ -413,7 +435,7 @@ void parseTableBasedImage() {
     // Is this image interlaced ?
     tbiInterlaced = ((tbiPackedBits & INTERLACEFLAG) != 0);
 
-#if DEBUG == 1
+#if DEBUG == 1 && DEBUG_PROCESSING_TBI_DESC_INTERLACED == 1
     Serial.print("Image interlaced: ");
     Serial.println((tbiInterlaced != 0) ? "Yes" : "No");
 #endif
@@ -425,7 +447,7 @@ void parseTableBasedImage() {
         int colorBits = ((tbiPackedBits & 7) + 1);
         colorCount = 1 << colorBits;
 
-#if DEBUG == 1
+#if DEBUG == 1 && DEBUG_PROCESSING_TBI_DESC_LOCAL_COLOR_TABLE == 1
         Serial.print("Local color table with ");
         Serial.print(colorCount);
         Serial.println(" colors present");
@@ -491,7 +513,7 @@ void parseTableBasedImage() {
     // Read the min LZW code size
     lzwCodeSize = readByte();
 
-#if DEBUG == 1
+#if DEBUG == 1 && DEBUG_PROCESSING_TBI_DESC_LZWCODESIZE == 1
     Serial.print("LzwCodeSize: ");
     Serial.println(lzwCodeSize);
 #endif
@@ -501,7 +523,7 @@ void parseTableBasedImage() {
     int offset = 0;
     int dataBlockSize = readByte();
     while (dataBlockSize != 0) {
-#if DEBUG == 1
+#if DEBUG == 1 && DEBUG_PROCESSING_TBI_DESC_DATABLOCKSIZE == 1
     Serial.print("dataBlockSize: ");
     Serial.println(dataBlockSize);
 #endif
@@ -515,7 +537,7 @@ void parseTableBasedImage() {
             // discard the data block that would cause a buffer overflow
             for(i=0; i<dataBlockSize; i++)
                 file.read();
-#if DEBUG == 1
+#if DEBUG == 1 && DEBUG_PROCESSING_TBI_DESC_LZWIMAGEDATA_OVERFLOW == 1
             Serial.print("******* Prevented lzwImageData Overflow ******");
 #endif
         }
@@ -524,7 +546,7 @@ void parseTableBasedImage() {
         dataBlockSize = readByte();
     }
 
-#if DEBUG == 1
+#if DEBUG == 1 && DEBUG_PROCESSING_TBI_DESC_LZWIMAGEDATA_SIZE == 1
     Serial.print("total lzwImageData Size: ");
     Serial.println(offset);
 #endif
@@ -550,14 +572,14 @@ void parseTableBasedImage() {
 // Parse gif data
 int parseData() {
 
-#if DEBUG == 1
+#if DEBUG == 1 && DEBUG_PARSING_DATA == 1
     Serial.println("\nParsing Data Block");
 #endif
 
     boolean done = false;
     while (! done) {
 
-#if 0 && DEBUG == 1
+#if DEBUG == 1 && DEBUG_WAIT_FOR_KEY_PRESS == 1
     Serial.println("\nPress Key For Next");
     while(Serial.read() <= 0);
 #endif
@@ -567,7 +589,7 @@ int parseData() {
 
         if (b == 0x2c) {
             // Parse table based image
-#if DEBUG == 1
+#if DEBUG == 1 && DEBUG_PARSING_DATA == 1
     Serial.println("\nParsing Table Based");
 #endif
             parseTableBasedImage();
@@ -577,7 +599,7 @@ int parseData() {
             // Parse extension
             b = readByte();
 
-#if DEBUG == 1
+#if DEBUG == 1 && DEBUG_PARSING_DATA == 1
     Serial.println("\nParsing Extension");
 #endif
 
@@ -606,7 +628,7 @@ int parseData() {
             }
         }
         else	{
-#if DEBUG == 1
+#if DEBUG == 1 && DEBUG_PARSING_DATA == 1
     Serial.println("\nParsing Done");
 #endif
             done = true;
