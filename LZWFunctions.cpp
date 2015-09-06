@@ -64,7 +64,7 @@ int bs;                     // Current buffer size for GIF
 byte *sp;
 byte stack  [LZW_SIZTABLE];
 byte suffix [LZW_SIZTABLE];
-unsigned int prefix [LZW_SIZTABLE];
+uint16_t prefix [LZW_SIZTABLE];
 
 // Initialize LZW decoder
 //   csize initial code size in bits
