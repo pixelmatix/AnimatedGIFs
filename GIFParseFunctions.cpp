@@ -127,6 +127,11 @@ byte imageDataBU[WIDTH * HEIGHT];
 callback screenClearCallback;
 callback updateScreenCallback;
 pixel_callback drawPixelCallback;
+callback startDrawingCallback;
+
+void setStartDrawingCallback(callback f) {
+    startDrawingCallback = f;
+}
 
 void setUpdateScreenCallback(callback f) {
     updateScreenCallback = f;
@@ -735,6 +740,8 @@ void decompressAndDisplayFrame(unsigned long filePositionAfter) {
 
     // LZW doesn't parse through all the data, manually set position
     file.seek(filePositionAfter);
+
+    (*startDrawingCallback)();
 
     // Image data is decompressed, now display portion of image affected by frame
     int yOffset, pixel;

@@ -90,8 +90,11 @@ SMARTMATRIX_ALLOCATE_SCROLLING_LAYER(scrollingLayer, kMatrixWidth, kMatrixHeight
 
 int num_files;
 
+
 void screenClearCallback(void) {
   backgroundLayer.fillScreen({0,0,0});
+}
+
 byte stackBuffer[4*1024];
 
 // stack is up to 4kB
@@ -115,6 +118,10 @@ void * getLZWPrefixBufferCallback(void) {
   return (void*)((byte *)backgroundLayer.backBuffer() + 0*1024);
   //return (void*)prefixBuffer;
 }
+
+void startDrawingCallback(void) {
+  // copy refresh to draw
+  backgroundLayer.copyRefreshToDrawing();
 }
 
 void updateScreenCallback(void) {
@@ -130,6 +137,7 @@ void setup() {
     setScreenClearCallback(screenClearCallback);
     setUpdateScreenCallback(updateScreenCallback);
     setDrawPixelCallback(drawPixelCallback);
+    setStartDrawingCallback(startDrawingCallback);
 
     setGetStackCallback(getLZWStackBufferCallback);
     setGetSuffixCallback(getLZWSuffixBufferCallback);
