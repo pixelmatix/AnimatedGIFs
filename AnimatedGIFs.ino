@@ -69,6 +69,9 @@ const int defaultBrightness = 255;
 const rgb24 COLOR_BLACK = {
     0, 0, 0 };
 
+// WIDTH and HEIGHT are defined in GIFParseFunctions.cpp, only play GIFs that are size WIDTHxHEIGHT or smaller
+// Note for 128x32 and 64x64 displays - set kRefreshDepth=24 to reduce RAM, decrease refreshRate in setup() to 90 to get good GIF frame rate
+
 /* SmartMatrix configuration and memory allocation */
 #define COLOR_DEPTH 24                  // known working: 24, 48 - If the sketch uses type `rgb24` directly, COLOR_DEPTH must be 24
 const uint8_t kMatrixWidth = 32;        // known working: 32, 64, 96, 128
