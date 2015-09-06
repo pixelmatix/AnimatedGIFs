@@ -61,6 +61,8 @@
 
 #define DISPLAY_TIME_SECONDS 10
 
+#define ENABLE_SCROLLING  1
+
 // range 0-255
 const int defaultBrightness = 255;
 
@@ -80,8 +82,9 @@ const uint8_t kScrollingLayerOptions = (SM_SCROLLING_OPTIONS_NONE);
 
 SMARTMATRIX_ALLOCATE_BUFFERS(matrix, kMatrixWidth, kMatrixHeight, kRefreshDepth, kDmaBufferRows, kPanelType, kMatrixOptions);
 SMARTMATRIX_ALLOCATE_BACKGROUND_LAYER(backgroundLayer, kMatrixWidth, kMatrixHeight, COLOR_DEPTH, kBackgroundLayerOptions);
+#if ENABLE_SCROLLING == 1
 SMARTMATRIX_ALLOCATE_SCROLLING_LAYER(scrollingLayer, kMatrixWidth, kMatrixHeight, COLOR_DEPTH, kScrollingLayerOptions);
-
+#endif
 
 // Chip select for SD card on the SmartMatrix Shield
 #define SD_CS 15
@@ -160,7 +163,9 @@ void setup() {
 
     // Initialize matrix
     matrix.addLayer(&backgroundLayer); 
+#if ENABLE_SCROLLING == 1
     matrix.addLayer(&scrollingLayer); 
+#endif
     matrix.begin();
 
     // configure matrix options
@@ -173,7 +178,9 @@ void setup() {
     // initialize the SD card at full speed
     pinMode(SD_CS, OUTPUT);
     if (!SD.begin(SD_CS)) {
+#if ENABLE_SCROLLING == 1
         scrollingLayer.start("No SD card", -1);
+#endif
         Serial.println("No SD card");
         while(1);
     }
@@ -182,13 +189,17 @@ void setup() {
     num_files = enumerateGIFFiles(GIF_DIRECTORY, false);
 
     if(num_files < 0) {
+#if ENABLE_SCROLLING == 1
         scrollingLayer.start("No gifs directory", -1);
+#endif
         Serial.println("No gifs directory");
         while(1);
     }
 
     if(!num_files) {
+#if ENABLE_SCROLLING == 1
         scrollingLayer.start("Empty gifs directory", -1);
+#endif
         Serial.println("Empty gifs directory");
         while(1);
     }
