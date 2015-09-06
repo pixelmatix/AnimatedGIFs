@@ -166,10 +166,11 @@ void setup() {
 #if ENABLE_SCROLLING == 1
     matrix.addLayer(&scrollingLayer); 
 #endif
+
     matrix.begin();
 
-    // configure matrix options
-    matrix.setBrightness(defaultBrightness);
+    // for large panels, set the refresh lower to give more CPU time to decoding GIFs
+    matrix.setRefreshRate(90);
 
     // Clear screen
     backgroundLayer.fillScreen(COLOR_BLACK);

@@ -153,7 +153,10 @@ int lzw_get_code() {
 //   returns the number of bytes decoded
 int lzw_decode(byte *buf, int len) {
     int l, c, code;
+
+#if DEBUG == 1
     unsigned char debugMessagePrinted = 0;
+#endif
 
     if (end_code < 0) {
         return 0;
