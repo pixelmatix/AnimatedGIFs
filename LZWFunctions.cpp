@@ -62,8 +62,10 @@ int extra_slot;
 int slot;                   // Last read code
 int fc, oc;
 int bs;                     // Current buffer size for GIF
+int bcnt;
 byte *sp;
-get_byte_callback getByteCallback;
+get_bytes_callback getBytesCallback;
+byte * temp_buffer;
 
 #if USE_EXTERNAL_BUFFERS == 0
 byte stack  [LZW_SIZTABLE];
@@ -89,12 +91,16 @@ void setGetPrefixCallback(get_buffer_callback f) {
 }
 #endif
 
+void lzw_setTempBuffer(byte * tempBuffer) {
+    temp_buffer = tempBuffer;
+}
+
 // Initialize LZW decoder
 //   csize initial code size in bits
 //   buf input data
-void lzw_decode_init (int csize, get_byte_callback f) {
+void lzw_decode_init (int csize, get_bytes_callback f) {
 
-    getByteCallback = f;
+    getBytesCallback = f;
 
 #if USE_EXTERNAL_BUFFERS == 1
     stack = (byte *)(*getStackCallback)();
@@ -106,6 +112,7 @@ void lzw_decode_init (int csize, get_byte_callback f) {
     bbuf = 0;
     bbits = 0;
     bs = 0;
+    bcnt = 0;
 
     // Initialize decoder variables
     codesize = csize;
@@ -123,12 +130,16 @@ void lzw_decode_init (int csize, get_byte_callback f) {
 int lzw_get_code() {
 
     while (bbits < cursize) {
-        if (!bs) {
-            bs = (*getByteCallback)();
+        if (bcnt == bs) {
+            // get number of bytes in next block
+            (*getBytesCallback)(temp_buffer, 1);
+            bs = temp_buffer[0];
+            (*getBytesCallback)(temp_buffer, bs);
+            bcnt = 0;
         }
-        bbuf |= (*getByteCallback)() << bbits;
+        bbuf |= temp_buffer[bcnt] << bbits;
         bbits += 8;
-        bs--;
+        bcnt++;
     }
     int c = bbuf;
     bbuf >>= cursize;

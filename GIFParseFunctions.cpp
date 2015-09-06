@@ -160,12 +160,6 @@ int readByte() {
     return b;
 }
 
-byte readByteOnly() {
-
-    return file.read();
-}
-
-
 // Read a file word
 int readWord() {
 
@@ -564,7 +558,8 @@ void parseTableBasedImage() {
     // Process the animation frame for display
 
     // Initialize the LZW decoder for this frame
-    lzw_decode_init(lzwCodeSize, readByteOnly);
+    lzw_decode_init(lzwCodeSize, readIntoBuffer);
+    lzw_setTempBuffer((byte*)tempBuffer);
 
     // Make sure there is at least some delay between frames
     if (frameDelay < 1) {

@@ -7,7 +7,7 @@
 
 typedef void (*callback)(void);
 typedef void (*pixel_callback)(int16_t x, int16_t y, uint8_t red, uint8_t green, uint8_t blue);
-typedef byte (*get_byte_callback)(void);
+typedef int (*get_bytes_callback)(void * buffer, int numberOfBytes);
 typedef void* (*get_buffer_callback)(void);
 
 void setScreenClearCallback(callback f);
@@ -36,8 +36,9 @@ int processGIFFile(const char * pathname);
 } rgb24;
 #endif
 
-void lzw_decode_init(int csize, get_byte_callback f);
+void lzw_decode_init(int csize, get_bytes_callback f);
 int lzw_decode(byte *buf, int len);
 void decompressAndDisplayFrame(unsigned long filePositionAfter);
+void lzw_setTempBuffer(byte * tempBuffer);
 
 #endif
