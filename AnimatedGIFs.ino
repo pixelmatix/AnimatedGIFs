@@ -96,6 +96,44 @@ SMARTMATRIX_ALLOCATE_SCROLLING_LAYER(scrollingLayer, kMatrixWidth, kMatrixHeight
 
 int num_files;
 
+/* 
+  advanced usage - use large buffers in backgroundLayer for LZW decoding, e.g. 
+  with 64x64 or 32*128@24-bit backgroundLayer, drawingBuffer is 12kB, enough to hold the prefix and suffix buffer
+  with 32*96@24-bit backgroundLayer, drawingBuffer is 9kB, enough to hold the prefix buffer
+  with 32*64@24-bit backgroundLayer, drawingBuffer is 6kB, enough to hold the suffix buffer
+  with smaller than 32x32@24-bit or 16x96@24-bit is too small to hold any buffers
+  Setting USE_EXTERNAL_BUFFERS will enable the LZW decoding to trash these buffers for each frame, startDrawingCallback()
+    takes care of copying data from the refreshBuffer to drawingBuffer before drawing the GIF on top
+*/
+#if USE_EXTERNAL_BUFFERS == 1
+byte stackBuffer[4*1024];
+// stack is 4kB at LZW_MAXBITS=12
+void * getLZWStackBufferCallback(void) {
+  return (void*)stackBuffer;
+}
+
+//byte suffixBuffer[4*1024];
+
+// suffix is 4kB at LZW_MAXBITS=12
+void * getLZWSuffixBufferCallback(void) {
+  return (void*)((byte *)backgroundLayer.backBuffer() + 0*1024);
+  //return (void*)suffixBuffer;
+}
+
+uint16_t prefixBuffer[4*1024];
+
+// prefix is 8kB (4kB * sizeof(uint16_t)) at LZW_MAXBITS=12
+void * getLZWPrefixBufferCallback(void) {
+  return (void*)((byte *)backgroundLayer.backBuffer() + 4*1024);
+  //return (void*)prefixBuffer;
+}
+
+void startDrawingCallback(void) {
+  // copy refresh to draw
+  backgroundLayer.copyRefreshToDrawing();
+}
+#endif
+
 void screenClearCallback(void) {
   backgroundLayer.fillScreen({0,0,0});
 }
@@ -113,6 +151,13 @@ void setup() {
     setScreenClearCallback(screenClearCallback);
     setUpdateScreenCallback(updateScreenCallback);
     setDrawPixelCallback(drawPixelCallback);
+
+#if USE_EXTERNAL_BUFFERS == 1
+    setStartDrawingCallback(startDrawingCallback);
+    setGetStackCallback(getLZWStackBufferCallback);
+    setGetSuffixCallback(getLZWSuffixBufferCallback);
+    setGetPrefixCallback(getLZWPrefixBufferCallback);
+#endif
 
     // Seed the random number generator
     randomSeed(analogRead(14));

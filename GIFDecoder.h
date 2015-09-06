@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 
+#define USE_EXTERNAL_BUFFERS    0
+
 typedef void (*callback)(void);
 typedef void (*pixel_callback)(int16_t x, int16_t y, uint8_t red, uint8_t green, uint8_t blue);
 typedef int (*get_bytes_callback)(void * buffer, int numberOfBytes);
@@ -12,6 +14,12 @@ void setScreenClearCallback(callback f);
 void setUpdateScreenCallback(callback f);
 void setDrawPixelCallback(pixel_callback f);
 void setStartDrawingCallback(callback f);
+
+#if USE_EXTERNAL_BUFFERS == 1
+void setGetStackCallback(get_buffer_callback f);
+void setGetSuffixCallback(get_buffer_callback f);
+void setGetPrefixCallback(get_buffer_callback f);
+#endif
 
 // public
 int enumerateGIFFiles(const char *directoryName, boolean displayFilenames);

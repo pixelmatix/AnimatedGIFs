@@ -67,9 +67,29 @@ byte *sp;
 get_bytes_callback getBytesCallback;
 byte * temp_buffer;
 
+#if USE_EXTERNAL_BUFFERS == 0
 byte stack  [LZW_SIZTABLE];
 byte suffix [LZW_SIZTABLE];
 uint16_t prefix [LZW_SIZTABLE];
+#else
+// buffers need to be size LZW_SIZTABLE
+byte * stack;       
+byte * suffix;
+uint16_t * prefix;
+get_buffer_callback getStackCallback;
+get_buffer_callback getSuffixCallback;
+get_buffer_callback getPrefixCallback;
+
+void setGetStackCallback(get_buffer_callback f) {
+    getStackCallback = f;
+}
+void setGetSuffixCallback(get_buffer_callback f) {
+    getSuffixCallback = f;
+}
+void setGetPrefixCallback(get_buffer_callback f) {
+    getPrefixCallback = f;
+}
+#endif
 
 void lzw_setTempBuffer(byte * tempBuffer) {
     temp_buffer = tempBuffer;
@@ -81,6 +101,12 @@ void lzw_setTempBuffer(byte * tempBuffer) {
 void lzw_decode_init (int csize, get_bytes_callback f) {
 
     getBytesCallback = f;
+
+#if USE_EXTERNAL_BUFFERS == 1
+    stack = (byte *)(*getStackCallback)();
+    suffix = (byte *)(*getSuffixCallback)();
+    prefix = (uint16_t *)(*getPrefixCallback)();
+#endif
 
     // Initialize read buffer variables
     bbuf = 0;
