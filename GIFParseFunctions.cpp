@@ -90,6 +90,8 @@ int rectY;
 int rectWidth;
 int rectHeight;
 
+unsigned long nextFrameTime_ms;
+
 int colorCount;
 rgb24 palette[256];
 
@@ -722,14 +724,12 @@ void decompressAndDisplayFrame() {
     // Make animation frame visible
     // swapBuffers() call can take up to 1/framerate seconds to return (it waits until a buffer copy is complete)
     // note the time before calling
-    int nextFrameTime_ms = millis() + (10 * frameDelay);
+
+    // wait until time to display next frame
+    while(nextFrameTime_ms > millis());
+
+    // calculate time to display next frame
+    nextFrameTime_ms = millis() + (10 * frameDelay);
     if(updateScreenCallback)
         (*updateScreenCallback)();
-
-    // get the number of milliseconds to delay
-    nextFrameTime_ms -= millis();
-
-    // the space between frames isn't perfect as there is a variable amount of time to process the next frame, but this gets it close
-    if(nextFrameTime_ms > 0)
-        delay(nextFrameTime_ms);
 }
