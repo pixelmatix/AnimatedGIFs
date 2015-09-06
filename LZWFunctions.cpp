@@ -62,17 +62,16 @@ int fc, oc;
 int bs;                     // Current buffer size for GIF
 byte *sp;
 get_byte_callback getByteCallback;
-#if 0
+
+#if USE_EXTERNAL_BUFFERS == 0
 byte stack  [LZW_SIZTABLE];
 byte suffix [LZW_SIZTABLE];
-unsigned int prefix [LZW_SIZTABLE];
+uint16_t prefix [LZW_SIZTABLE];
 #else
 // buffers need to be size LZW_SIZTABLE
 byte * stack;       
 byte * suffix;
 uint16_t * prefix;
-#endif
-
 get_buffer_callback getStackCallback;
 get_buffer_callback getSuffixCallback;
 get_buffer_callback getPrefixCallback;
@@ -86,6 +85,7 @@ void setGetSuffixCallback(get_buffer_callback f) {
 void setGetPrefixCallback(get_buffer_callback f) {
     getPrefixCallback = f;
 }
+#endif
 
 // Initialize LZW decoder
 //   csize initial code size in bits
@@ -94,9 +94,11 @@ void lzw_decode_init (int csize, get_byte_callback f) {
 
     getByteCallback = f;
 
+#if USE_EXTERNAL_BUFFERS == 1
     stack = (byte *)(*getStackCallback)();
     suffix = (byte *)(*getSuffixCallback)();
     prefix = (uint16_t *)(*getPrefixCallback)();
+#endif
 
     // Initialize read buffer variables
     bbuf = 0;

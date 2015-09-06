@@ -741,7 +741,9 @@ void decompressAndDisplayFrame(unsigned long filePositionAfter) {
     // LZW doesn't parse through all the data, manually set position
     file.seek(filePositionAfter);
 
-    (*startDrawingCallback)();
+    // Optional callback can be used to get drawing routines ready
+    if(startDrawingCallback)
+        (*startDrawingCallback)();
 
     // Image data is decompressed, now display portion of image affected by frame
     int yOffset, pixel;

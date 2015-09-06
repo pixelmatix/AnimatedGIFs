@@ -72,7 +72,7 @@ const rgb24 COLOR_BLACK = {
 const uint8_t kMatrixWidth = 32;        // known working: 32, 64, 96, 128
 const uint8_t kMatrixHeight = 32;       // known working: 16, 32, 48, 64
 const uint8_t kRefreshDepth = 36;       // known working: 24, 36, 48
-const uint8_t kDmaBufferRows = 4;       // known working: 4
+const uint8_t kDmaBufferRows = 2;       // known working: 2-4
 const uint8_t kPanelType = SMARTMATRIX_HUB75_32ROW_MOD16SCAN; // use SMARTMATRIX_HUB75_16ROW_MOD8SCAN for common 16x32 panels
 const uint8_t kMatrixOptions = (SMARTMATRIX_OPTIONS_NONE);    // see http://docs.pixelmatix.com/SmartMatrix for options
 const uint8_t kBackgroundLayerOptions = (SM_BACKGROUND_OPTIONS_NONE);
@@ -90,38 +90,46 @@ SMARTMATRIX_ALLOCATE_SCROLLING_LAYER(scrollingLayer, kMatrixWidth, kMatrixHeight
 
 int num_files;
 
-
-void screenClearCallback(void) {
-  backgroundLayer.fillScreen({0,0,0});
-}
-
+/* 
+  advanced usage - use large buffers in backgroundLayer for LZW decoding, e.g. 
+  with 64x64 or 32*128@24-bit backgroundLayer, drawingBuffer is 12kB, enough to hold the prefix and suffix buffer
+  with 32*96@24-bit backgroundLayer, drawingBuffer is 9kB, enough to hold the prefix buffer
+  with 32*64@24-bit backgroundLayer, drawingBuffer is 6kB, enough to hold the suffix buffer
+  with smaller than 32x32@24-bit or 16x96@24-bit is too small to hold any buffers
+  Setting USE_EXTERNAL_BUFFERS will enable the LZW decoding to trash these buffers for each frame, startDrawingCallback()
+    takes care of copying data from the refreshBuffer to drawingBuffer before drawing the GIF on top
+*/
+#if USE_EXTERNAL_BUFFERS == 1
 byte stackBuffer[4*1024];
-
-// stack is up to 4kB
+// stack is 4kB at LZW_MAXBITS=12
 void * getLZWStackBufferCallback(void) {
-  //return (void*)((byte *)backgroundLayer.backBuffer() + 0*1024);
   return (void*)stackBuffer;
 }
 
 //byte suffixBuffer[4*1024];
 
-// suffix is up to 4kB
+// suffix is 4kB at LZW_MAXBITS=12
 void * getLZWSuffixBufferCallback(void) {
-  return (void*)((byte *)backgroundLayer.backBuffer() + 8*1024);
+  return (void*)((byte *)backgroundLayer.backBuffer() + 0*1024);
   //return (void*)suffixBuffer;
 }
 
-//uint16_t prefixBuffer[4*1024];
+uint16_t prefixBuffer[4*1024];
 
-// prefix is up to 8kB (4kB * sizeof(uint16_t))
+// prefix is 8kB (4kB * sizeof(uint16_t)) at LZW_MAXBITS=12
 void * getLZWPrefixBufferCallback(void) {
-  return (void*)((byte *)backgroundLayer.backBuffer() + 0*1024);
+  return (void*)((byte *)backgroundLayer.backBuffer() + 4*1024);
   //return (void*)prefixBuffer;
 }
 
 void startDrawingCallback(void) {
   // copy refresh to draw
   backgroundLayer.copyRefreshToDrawing();
+}
+#endif
+
+void screenClearCallback(void) {
+  backgroundLayer.fillScreen({0,0,0});
 }
 
 void updateScreenCallback(void) {
@@ -137,11 +145,13 @@ void setup() {
     setScreenClearCallback(screenClearCallback);
     setUpdateScreenCallback(updateScreenCallback);
     setDrawPixelCallback(drawPixelCallback);
-    setStartDrawingCallback(startDrawingCallback);
 
+#if USE_EXTERNAL_BUFFERS == 1
+    setStartDrawingCallback(startDrawingCallback);
     setGetStackCallback(getLZWStackBufferCallback);
     setGetSuffixCallback(getLZWSuffixBufferCallback);
     setGetPrefixCallback(getLZWPrefixBufferCallback);
+#endif
 
     // Seed the random number generator
     randomSeed(analogRead(14));
