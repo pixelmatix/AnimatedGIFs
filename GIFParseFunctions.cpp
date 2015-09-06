@@ -30,17 +30,17 @@
 #define DEBUG 0
 
 #if DEBUG == 1
-#define DEBUG_SCREEN_DESCRIPTOR                             0
-#define DEBUG_GLOBAL_COLOR_TABLE                            0
-#define DEBUG_PROCESSING_PLAIN_TEXT_EXT                     0
-#define DEBUG_PROCESSING_GRAPHIC_CONTROL_EXT                0
-#define DEBUG_PROCESSING_APP_EXT                            0
-#define DEBUG_PROCESSING_COMMENT_EXT                        0
-#define DEBUG_PROCESSING_FILE_TERM                          0
-#define DEBUG_PROCESSING_TABLE_IMAGE_DESC                   0
-#define DEBUG_PROCESSING_TBI_DESC_START                     0
-#define DEBUG_PROCESSING_TBI_DESC_INTERLACED                0
-#define DEBUG_PROCESSING_TBI_DESC_LOCAL_COLOR_TABLE         0
+#define DEBUG_SCREEN_DESCRIPTOR                             1
+#define DEBUG_GLOBAL_COLOR_TABLE                            1
+#define DEBUG_PROCESSING_PLAIN_TEXT_EXT                     1
+#define DEBUG_PROCESSING_GRAPHIC_CONTROL_EXT                1
+#define DEBUG_PROCESSING_APP_EXT                            1
+#define DEBUG_PROCESSING_COMMENT_EXT                        1
+#define DEBUG_PROCESSING_FILE_TERM                          1
+#define DEBUG_PROCESSING_TABLE_IMAGE_DESC                   1
+#define DEBUG_PROCESSING_TBI_DESC_START                     1
+#define DEBUG_PROCESSING_TBI_DESC_INTERLACED                1
+#define DEBUG_PROCESSING_TBI_DESC_LOCAL_COLOR_TABLE         1
 #define DEBUG_PROCESSING_TBI_DESC_LZWCODESIZE               1
 #define DEBUG_PROCESSING_TBI_DESC_DATABLOCKSIZE             1
 #define DEBUG_PROCESSING_TBI_DESC_LZWIMAGEDATA_OVERFLOW     1
@@ -736,6 +736,11 @@ void decompressAndDisplayFrame(unsigned long filePositionAfter) {
 #if DEBUG == 1 && DEBUG_DECOMPRESS_AND_DISPLAY == 1
     Serial.println("File Position After: ");
     Serial.println(file.position());
+#endif
+
+#if DEBUG == 1 && DEBUG_WAIT_FOR_KEY_PRESS == 1
+    Serial.println("\nPress Key For Next");
+    while(Serial.read() <= 0);
 #endif
 
     // LZW doesn't parse through all the data, manually set position
