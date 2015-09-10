@@ -20,7 +20,7 @@ void chooseRandomGIFFilename(const char *directoryName, char *pnBuffer);
 int processGIFFile(const char * pathname);
 
 // private
-#ifndef SmartMatrix_h
+#if !defined SmartMatrix_h && !defined SmartMatrix3_h
  typedef struct rgb24 {
     uint8_t red;
     uint8_t green;
