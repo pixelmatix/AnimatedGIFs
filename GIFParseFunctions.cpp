@@ -417,6 +417,13 @@ void parseTableBasedImage() {
     Serial.println("\nProcessing Table Based Image Descriptor");
 #endif
 
+#if GIFDEBUG == 1 && DEBUG_PARSING_DATA == 1
+    Serial.println("File Position: ");
+    Serial.println(file.position());
+    Serial.println("File Size: ");
+    Serial.println(file.size());
+#endif
+
     // Parse image descriptor
     tbiImageX = readWord();
     tbiImageY = readWord();
@@ -501,6 +508,15 @@ void parseTableBasedImage() {
         rectY = tbiImageY;
         rectWidth = tbiWidth;
         rectHeight = tbiHeight;
+
+        // limit rectangle to the bounds of WIDTH*HEIGHT
+        if(rectX + rectWidth > WIDTH)
+            rectWidth = WIDTH-rectX;
+        if(rectY + rectHeight > HEIGHT)
+            rectHeight = HEIGHT-rectY;
+        if(rectX >= WIDTH || rectY >= HEIGHT) {
+            rectX = rectY = rectWidth = rectHeight = 0;
+        }
 
         if (disposalMethod == DISPOSAL_BACKGROUND) {
             if (transparentColorIndex != NO_TRANSPARENT_INDEX) {
