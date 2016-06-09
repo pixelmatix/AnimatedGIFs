@@ -27,7 +27,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#define DEBUG 0
+#define LZWDEBUG 0
 
 #include <Arduino.h>
 #include "GIFDecoder.h"
@@ -128,7 +128,7 @@ int lzw_get_code() {
 int lzw_decode(byte *buf, int len) {
     int l, c, code;
 
-#if DEBUG == 1
+#if LZWDEBUG == 1
     unsigned char debugMessagePrinted = 0;
 #endif
 
@@ -183,7 +183,7 @@ int lzw_decode(byte *buf, int len) {
                     top_slot <<= 1;
                     curmask = mask[++cursize];
                 } else {
-#if DEBUG == 1
+#if LZWDEBUG == 1
                     if(!debugMessagePrinted) {
                         debugMessagePrinted = 1;
                         Serial.println("****** cursize >= MAXBITS *******");
