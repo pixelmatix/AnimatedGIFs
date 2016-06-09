@@ -125,7 +125,7 @@ int lzw_get_code() {
 //   buf 8 bit output buffer
 //   len number of pixels to decode
 //   returns the number of bytes decoded
-int lzw_decode(byte *buf, int len) {
+int lzw_decode(byte *buf, int len, byte *bufend) {
     int l, c, code;
 
 #if LZWDEBUG == 1
@@ -142,6 +142,12 @@ int lzw_decode(byte *buf, int len) {
             *buf++ = *(--sp);
             if ((--l) == 0) {
                 return len;
+            }
+            if(buf >= bufend) {
+#if LZWDEBUG == 1
+                Serial.println("****** LZW imageData buffer overrun *******");
+#endif
+                return len;                
             }
         }
         c = lzw_get_code();

@@ -29,7 +29,7 @@ int processGIFFile(const char * pathname);
 #endif
 
 void lzw_decode_init(int csize, get_bytes_callback f);
-int lzw_decode(byte *buf, int len);
+int lzw_decode(byte *buf, int len, byte *bufend);
 void decompressAndDisplayFrame(unsigned long filePositionAfter);
 void lzw_setTempBuffer(byte * tempBuffer);
 
