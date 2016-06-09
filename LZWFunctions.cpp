@@ -139,15 +139,19 @@ int lzw_decode(byte *buf, int len, byte *bufend) {
 
     for (;;) {
         while (sp > stack) {
-            *buf++ = *(--sp);
+            // load buf with data if we're still within bounds
+            if(buf < bufend) {
+                *buf++ = *(--sp);
+            } else {
+                // out of bounds, keep incrementing the pointers, but don't use the data
+#if LZWDEBUG == 1
+                // only print this message once per call to lzw_decode
+                if(buf == bufend)
+                    Serial.println("****** LZW imageData buffer overrun *******");
+#endif
+            }
             if ((--l) == 0) {
                 return len;
-            }
-            if(buf >= bufend) {
-#if LZWDEBUG == 1
-                Serial.println("****** LZW imageData buffer overrun *******");
-#endif
-                return len;                
             }
         }
         c = lzw_get_code();

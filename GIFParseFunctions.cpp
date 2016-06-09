@@ -707,19 +707,19 @@ void decompressAndDisplayFrame(unsigned long filePositionAfter) {
     if (tbiInterlaced) {
         // Decode every 8th line starting at line 0
         for (int line = tbiImageY + 0; line < tbiHeight + tbiImageY; line += 8) {
-            lzw_decode(imageData + (line * WIDTH) + tbiImageX, tbiWidth, imageData + sizeof(imageData));
+            lzw_decode(imageData + (line * WIDTH) + tbiImageX, tbiWidth, min(imageData + (line * WIDTH) + WIDTH, imageData + sizeof(imageData)));
         }
         // Decode every 8th line starting at line 4
         for (int line = tbiImageY + 4; line < tbiHeight + tbiImageY; line += 8) {
-            lzw_decode(imageData + (line * WIDTH) + tbiImageX, tbiWidth, imageData + sizeof(imageData));
+            lzw_decode(imageData + (line * WIDTH) + tbiImageX, tbiWidth, min(imageData + (line * WIDTH) + WIDTH, imageData + sizeof(imageData)));
         }
         // Decode every 4th line starting at line 2
         for (int line = tbiImageY + 2; line < tbiHeight + tbiImageY; line += 4) {
-            lzw_decode(imageData + (line * WIDTH) + tbiImageX, tbiWidth, imageData + sizeof(imageData));
+            lzw_decode(imageData + (line * WIDTH) + tbiImageX, tbiWidth, min(imageData + (line * WIDTH) + WIDTH, imageData + sizeof(imageData)));
         }
         // Decode every 2nd line starting at line 1
         for (int line = tbiImageY + 1; line < tbiHeight + tbiImageY; line += 2) {
-            lzw_decode(imageData + (line * WIDTH) + tbiImageX, tbiWidth, imageData + sizeof(imageData));
+            lzw_decode(imageData + (line * WIDTH) + tbiImageX, tbiWidth, min(imageData + (line * WIDTH) + WIDTH, imageData + sizeof(imageData)));
         }
     }
     else    {
