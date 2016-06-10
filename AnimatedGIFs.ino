@@ -135,6 +135,7 @@ void setup() {
     matrix.addLayer(&scrollingLayer); 
 #endif
 
+    matrix.setBrightness(defaultBrightness);
     matrix.begin();
 
     //matrix.setRefreshRate(90);
