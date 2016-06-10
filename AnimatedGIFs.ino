@@ -68,6 +68,7 @@
 #include <SPI.h>
 #include <SD.h>
 #include "GIFDecoder.h"
+#include "FilenameFunctions.h"
 
 #define DISPLAY_TIME_SECONDS 10
 
@@ -79,6 +80,7 @@ const int defaultBrightness = 255;
 const rgb24 COLOR_BLACK = {
     0, 0, 0 };
 
+GifDecoder decoder;
 
 /* SmartMatrix configuration and memory allocation */
 #define COLOR_DEPTH 24                  // known working: 24, 48 - If the sketch uses type `rgb24` directly, COLOR_DEPTH must be 24
@@ -118,9 +120,9 @@ void drawPixelCallback(int16_t x, int16_t y, uint8_t red, uint8_t green, uint8_t
 
 // Setup method runs once, when the sketch starts
 void setup() {
-    setScreenClearCallback(screenClearCallback);
-    setUpdateScreenCallback(updateScreenCallback);
-    setDrawPixelCallback(drawPixelCallback);
+    decoder.setScreenClearCallback(screenClearCallback);
+    decoder.setUpdateScreenCallback(updateScreenCallback);
+    decoder.setDrawPixelCallback(drawPixelCallback);
 
     // Seed the random number generator
     randomSeed(analogRead(14));
@@ -194,7 +196,7 @@ void loop() {
         futureTime = millis() + (DISPLAY_TIME_SECONDS * 1000);
 
         while (futureTime > millis()) {
-            processGIFFile(pathname);
+            decoder.processGIFFile(pathname);
         }
     }
 }

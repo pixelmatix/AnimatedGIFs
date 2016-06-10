@@ -71,14 +71,14 @@ byte stack  [LZW_SIZTABLE];
 byte suffix [LZW_SIZTABLE];
 uint16_t prefix [LZW_SIZTABLE];
 
-void lzw_setTempBuffer(byte * tempBuffer) {
+void GifDecoder::lzw_setTempBuffer(byte * tempBuffer) {
     temp_buffer = tempBuffer;
 }
 
 // Initialize LZW decoder
 //   csize initial code size in bits
 //   buf input data
-void lzw_decode_init (int csize, get_bytes_callback f) {
+void GifDecoder::lzw_decode_init (int csize, get_bytes_callback f) {
 
     getBytesCallback = f;
 

@@ -130,29 +130,29 @@ callback updateScreenCallback;
 pixel_callback drawPixelCallback;
 callback startDrawingCallback;
 
-void setStartDrawingCallback(callback f) {
+void GifDecoder::setStartDrawingCallback(callback f) {
     startDrawingCallback = f;
 }
 
-void setUpdateScreenCallback(callback f) {
+void GifDecoder::setUpdateScreenCallback(callback f) {
     updateScreenCallback = f;
 }
 
-void setDrawPixelCallback(pixel_callback f) {
+void GifDecoder::setDrawPixelCallback(pixel_callback f) {
     drawPixelCallback = f;
 }
 
-void setScreenClearCallback(callback f) {
+void GifDecoder::setScreenClearCallback(callback f) {
     screenClearCallback = f;
 }
 
 // Backup the read stream by n bytes
-void backUpStream(int n) {
+void GifDecoder::backUpStream(int n) {
     file.seek(file.position() - n);
 }
 
 // Read a file byte
-int readByte() {
+int GifDecoder::readByte() {
 
     int b = file.read();
     if (b == -1) {
@@ -162,7 +162,7 @@ int readByte() {
 }
 
 // Read a file word
-int readWord() {
+int GifDecoder::readWord() {
 
     int b0 = readByte();
     int b1 = readByte();
@@ -170,7 +170,7 @@ int readWord() {
 }
 
 // Read the specified number of bytes into the specified buffer
-int readIntoBuffer(void *buffer, int numberOfBytes) {
+int GifDecoder::readIntoBuffer(void *buffer, int numberOfBytes) {
 
     int result = file.read(buffer, numberOfBytes);
     if (result == -1) {
@@ -180,7 +180,7 @@ int readIntoBuffer(void *buffer, int numberOfBytes) {
 }
 
 // Fill a portion of imageData buffer with a color index
-void fillImageDataRect(byte colorIndex, int x, int y, int width, int height) {
+void GifDecoder::fillImageDataRect(byte colorIndex, int x, int y, int width, int height) {
 
     int yOffset;
 
@@ -193,13 +193,13 @@ void fillImageDataRect(byte colorIndex, int x, int y, int width, int height) {
 }
 
 // Fill entire imageData buffer with a color index
-void fillImageData(byte colorIndex) {
+void GifDecoder::fillImageData(byte colorIndex) {
 
     memset(imageData, colorIndex, sizeof(imageData));
 }
 
 // Copy image data in rect from a src to a dst
-void copyImageDataRect(byte *dst, byte *src, int x, int y, int width, int height) {
+void GifDecoder::copyImageDataRect(byte *dst, byte *src, int x, int y, int width, int height) {
 
     int yOffset, offset;
 
@@ -213,7 +213,7 @@ void copyImageDataRect(byte *dst, byte *src, int x, int y, int width, int height
 }
 
 // Make sure the file is a Gif file
-boolean parseGifHeader() {
+bool GifDecoder::parseGifHeader() {
 
     char buffer[10];
 
@@ -228,7 +228,7 @@ boolean parseGifHeader() {
 }
 
 // Parse the logical screen descriptor
-void parseLogicalScreenDescriptor() {
+void GifDecoder::parseLogicalScreenDescriptor() {
 
     lsdWidth = readWord();
     lsdHeight = readWord();
@@ -251,7 +251,7 @@ void parseLogicalScreenDescriptor() {
 }
 
 // Parse the global color table
-void parseGlobalColorTable() {
+void GifDecoder::parseGlobalColorTable() {
 
     // Does a global color table exist?
     if (lsdPackedField & COLORTBLFLAG) {
@@ -271,7 +271,7 @@ void parseGlobalColorTable() {
 }
 
 // Parse plain text extension and dispose of it
-void parsePlainTextExtension() {
+void GifDecoder::parsePlainTextExtension() {
 
 #if GIFDEBUG == 1 && DEBUG_PROCESSING_PLAIN_TEXT_EXT == 1
     Serial.println("\nProcessing Plain Text Extension");
@@ -291,7 +291,7 @@ void parsePlainTextExtension() {
 }
 
 // Parse a graphic control extension
-void parseGraphicControlExtension() {
+void GifDecoder::parseGraphicControlExtension() {
 
 #if GIFDEBUG == 1 && DEBUG_PROCESSING_GRAPHIC_CONTROL_EXT == 1
     Serial.println("\nProcessing Graphic Control Extension");
@@ -330,7 +330,7 @@ void parseGraphicControlExtension() {
 }
 
 // Parse application extension
-void parseApplicationExtension() {
+void GifDecoder::parseApplicationExtension() {
 
     memset(tempBuffer, 0, sizeof(tempBuffer));
 
@@ -361,7 +361,7 @@ void parseApplicationExtension() {
 }
 
 // Parse comment extension
-void parseCommentExtension() {
+void GifDecoder::parseCommentExtension() {
 
 #if GIFDEBUG == 1 && DEBUG_PROCESSING_COMMENT_EXT == 1
     Serial.println("\nProcessing Comment Extension");
@@ -389,7 +389,7 @@ void parseCommentExtension() {
 }
 
 // Parse file terminator
-int parseGIFFileTerminator() {
+int GifDecoder::parseGIFFileTerminator() {
 
 #if GIFDEBUG == 1 && DEBUG_PROCESSING_FILE_TERM == 1
     Serial.println("\nProcessing file terminator");
@@ -411,7 +411,7 @@ int parseGIFFileTerminator() {
 }
 
 // Parse table based image data
-void parseTableBasedImage() {
+void GifDecoder::parseTableBasedImage() {
 
 #if GIFDEBUG == 1 && DEBUG_PROCESSING_TBI_DESC_START == 1
     Serial.println("\nProcessing Table Based Image Descriptor");
@@ -592,7 +592,7 @@ void parseTableBasedImage() {
 }
 
 // Parse gif data
-int parseData() {
+int GifDecoder::parseData() {
 
 #if GIFDEBUG == 1 && DEBUG_PARSING_DATA == 1
     Serial.println("\nParsing Data Block");
@@ -663,7 +663,7 @@ int parseData() {
 }
 
 // Attempt to parse the gif file
-int processGIFFile(const char *pathname) {
+int GifDecoder::processGIFFile(const char *pathname) {
 
     // Initialize variables
     keyFrame = true;
@@ -714,7 +714,7 @@ int processGIFFile(const char *pathname) {
 }
 
 // Decompress LZW data and display animation frame
-void decompressAndDisplayFrame(unsigned long filePositionAfter) {
+void GifDecoder::decompressAndDisplayFrame(unsigned long filePositionAfter) {
 
     // Each pixel of image is 8 bits and is an index into the palette
 
