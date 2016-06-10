@@ -20,13 +20,12 @@ void chooseRandomGIFFilename(const char *directoryName, char *pnBuffer);
 int processGIFFile(const char * pathname);
 
 // private
-#if !defined SmartMatrix_h && !defined SmartMatrix3_h
- typedef struct rgb24 {
+ typedef struct rgb_24 {
     uint8_t red;
     uint8_t green;
     uint8_t blue;
-} rgb24;
-#endif
+} rgb_24;
+
 
 void lzw_decode_init(int csize, get_bytes_callback f);
 int lzw_decode(byte *buf, int len, byte *bufend);

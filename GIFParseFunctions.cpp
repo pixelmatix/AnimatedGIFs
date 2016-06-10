@@ -115,7 +115,7 @@ int rectHeight;
 unsigned long nextFrameTime_ms;
 
 int colorCount;
-rgb24 palette[256];
+rgb_24 palette[256];
 
 char tempBuffer[260];
 
@@ -265,7 +265,7 @@ void parseGlobalColorTable() {
         Serial.println(" colors present");
 #endif
         // Read color values into the palette array
-        int colorTableBytes = sizeof(rgb24) * colorCount;
+        int colorTableBytes = sizeof(rgb_24) * colorCount;
         readIntoBuffer(palette, colorTableBytes);
     }
 }
@@ -465,7 +465,7 @@ void parseTableBasedImage() {
         Serial.println(" colors present");
 #endif
         // Read colors into palette
-        int colorTableBytes = sizeof(rgb24) * colorCount;
+        int colorTableBytes = sizeof(rgb_24) * colorCount;
         readIntoBuffer(palette, colorTableBytes);
     }
 
