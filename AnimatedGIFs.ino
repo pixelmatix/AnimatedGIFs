@@ -65,8 +65,6 @@
  */
 
 #include <SmartMatrix3.h>
-#include <SPI.h>
-#include <SD.h>
 #include "GIFDecoder.h"
 #include "FilenameFunctions.h"
 
@@ -106,8 +104,6 @@ SMARTMATRIX_ALLOCATE_SCROLLING_LAYER(scrollingLayer, kMatrixWidth, kMatrixHeight
 
 int num_files;
 
-File file;
-
 void screenClearCallback(void) {
   backgroundLayer.fillScreen({0,0,0});
 }
@@ -118,22 +114,6 @@ void updateScreenCallback(void) {
 
 void drawPixelCallback(int16_t x, int16_t y, uint8_t red, uint8_t green, uint8_t blue) {
   backgroundLayer.drawPixel(x, y, {red, green, blue});
-}
-
-bool fileSeekCallback(unsigned long position) {
-    return file.seek(position);
-}
-
-unsigned long filePositionCallback(void) {
-    return file.position();
-}
-
-int fileReadCallback(void) {
-    return file.read();
-}
-
-int fileReadBlockCallback(void * buffer, int numberOfBytes) {
-    return file.read(buffer, numberOfBytes);
 }
 
 // Setup method runs once, when the sketch starts
@@ -169,9 +149,7 @@ void setup() {
     backgroundLayer.fillScreen(COLOR_BLACK);
     backgroundLayer.swapBuffers();
 
-    // initialize the SD card at full speed
-    pinMode(SD_CS, OUTPUT);
-    if (!SD.begin(SD_CS)) {
+    if(initSdCard(SD_CS) < 0) {
 #if ENABLE_SCROLLING == 1
         scrollingLayer.start("No SD card", -1);
 #endif
@@ -202,7 +180,6 @@ void setup() {
 
 void loop() {
     unsigned long futureTime;
-    char pathname[30];
 
     int index = random(num_files);
 
@@ -212,24 +189,14 @@ void loop() {
         // matrix.fillScreen(COLOR_BLACK);
         // matrix.swapBuffers();
 
-        if(file)
-            file.close();
-
         // Calculate time in the future to terminate animation
         futureTime = millis() + (DISPLAY_TIME_SECONDS * 1000);
 
-        getGIFFilenameByIndex(GIF_DIRECTORY, index++, pathname);
-        if (index >= num_files) {
+        if (++index >= num_files) {
             index = 0;
         }
 
-        Serial.print("Pathname: ");
-        Serial.println(pathname);
-
-        // Attempt to open the file for reading
-        file = SD.open(pathname);
-        if (!file) {
-            Serial.println("Error opening GIF file");
+        if (openGifFilenameByIndex(GIF_DIRECTORY, index) < 0) {
             continue;
         }
 

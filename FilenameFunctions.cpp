@@ -8,7 +8,33 @@
 
 #include <SD.h>
 
+File file;
+
 int numberOfFiles;
+
+bool fileSeekCallback(unsigned long position) {
+    return file.seek(position);
+}
+
+unsigned long filePositionCallback(void) {
+    return file.position();
+}
+
+int fileReadCallback(void) {
+    return file.read();
+}
+
+int fileReadBlockCallback(void * buffer, int numberOfBytes) {
+    return file.read(buffer, numberOfBytes);
+}
+
+int initSdCard(int chipSelectPin) {
+    // initialize the SD card at full speed
+    pinMode(chipSelectPin, OUTPUT);
+    if (!SD.begin(chipSelectPin))
+        return -1;
+    return 0;
+}
 
 bool isAnimationFile(const char filename []) {
     if (filename[0] == '_')
@@ -89,6 +115,28 @@ void getGIFFilenameByIndex(const char *directoryName, int index, char *pnBuffer)
     file.close();
     directory.close();
 }
+
+int openGifFilenameByIndex(const char *directoryName, int index) {
+    char pathname[30];
+
+    getGIFFilenameByIndex(directoryName, index, pathname);
+    
+    Serial.print("Pathname: ");
+    Serial.println(pathname);
+
+    if(file)
+        file.close();
+
+    // Attempt to open the file for reading
+    file = SD.open(pathname);
+    if (!file) {
+        Serial.println("Error opening GIF file");
+        return -1;
+    }
+
+    return 0;
+}
+
 
 // Return a random animated gif path/filename from the specified directory
 void chooseRandomGIFFilename(const char *directoryName, char *pnBuffer) {
