@@ -46,17 +46,17 @@ private:
     void parseGlobalColorTable(void);
     void parseLogicalScreenDescriptor(void);
     bool parseGifHeader(void);
-    void copyImageDataRect(byte *dst, byte *src, int x, int y, int width, int height);
-    void fillImageData(byte colorIndex);
-    void fillImageDataRect(byte colorIndex, int x, int y, int width, int height);
+    void copyImageDataRect(uint8_t *dst, uint8_t *src, int x, int y, int width, int height);
+    void fillImageData(uint8_t colorIndex);
+    void fillImageDataRect(uint8_t colorIndex, int x, int y, int width, int height);
     static int readIntoBuffer(void *buffer, int numberOfBytes);
     int readWord(void);
     void backUpStream(int n);
     int readByte(void);
 
     void lzw_decode_init(int csize, get_bytes_callback f);
-    int lzw_decode(byte *buf, int len, byte *bufend);
-    void lzw_setTempBuffer(byte * tempBuffer);
+    int lzw_decode(uint8_t *buf, int len, uint8_t *bufend);
+    void lzw_setTempBuffer(uint8_t * tempBuffer);
 };
 
 #endif

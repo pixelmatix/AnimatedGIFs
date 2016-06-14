@@ -97,7 +97,7 @@ int tbiImageY;
 int tbiWidth;
 int tbiHeight;
 int tbiPackedBits;
-boolean tbiInterlaced;
+bool tbiInterlaced;
 
 int frameDelay;
 int transparentColorIndex;
@@ -105,7 +105,7 @@ int prevBackgroundIndex;
 int prevDisposalMethod;
 int disposalMethod;
 int lzwCodeSize;
-boolean keyFrame;
+bool keyFrame;
 int rectX;
 int rectY;
 int rectWidth;
@@ -119,10 +119,10 @@ rgb_24 palette[256];
 char tempBuffer[260];
 
 // Buffer image data is decoded into
-byte imageData[WIDTH * HEIGHT];
+uint8_t imageData[WIDTH * HEIGHT];
 
 // Backup image data buffer for saving portions of image disposal method == 3
-byte imageDataBU[WIDTH * HEIGHT];
+uint8_t imageDataBU[WIDTH * HEIGHT];
 
 callback screenClearCallback;
 callback updateScreenCallback;
@@ -175,7 +175,9 @@ int GifDecoder::readByte() {
 
     int b = fileReadCallback();
     if (b == -1) {
+#if GIFDEBUG == 1
         Serial.println("Read error or EOF occurred");
+#endif
     }
     return b;
 }
@@ -199,7 +201,7 @@ int GifDecoder::readIntoBuffer(void *buffer, int numberOfBytes) {
 }
 
 // Fill a portion of imageData buffer with a color index
-void GifDecoder::fillImageDataRect(byte colorIndex, int x, int y, int width, int height) {
+void GifDecoder::fillImageDataRect(uint8_t colorIndex, int x, int y, int width, int height) {
 
     int yOffset;
 
@@ -212,13 +214,13 @@ void GifDecoder::fillImageDataRect(byte colorIndex, int x, int y, int width, int
 }
 
 // Fill entire imageData buffer with a color index
-void GifDecoder::fillImageData(byte colorIndex) {
+void GifDecoder::fillImageData(uint8_t colorIndex) {
 
     memset(imageData, colorIndex, sizeof(imageData));
 }
 
 // Copy image data in rect from a src to a dst
-void GifDecoder::copyImageDataRect(byte *dst, byte *src, int x, int y, int width, int height) {
+void GifDecoder::copyImageDataRect(uint8_t *dst, uint8_t *src, int x, int y, int width, int height) {
 
     int yOffset, offset;
 
@@ -296,7 +298,7 @@ void GifDecoder::parsePlainTextExtension() {
     Serial.println("\nProcessing Plain Text Extension");
 #endif
     // Read plain text header length
-    byte len = readByte();
+    uint8_t len = readByte();
 
     // Consume plain text header data
     readIntoBuffer(tempBuffer, len);
@@ -358,7 +360,7 @@ void GifDecoder::parseApplicationExtension() {
 #endif
 
     // Read block length
-    byte len = readByte();
+    uint8_t len = readByte();
 
     // Read app data
     readIntoBuffer(tempBuffer, len);
@@ -387,7 +389,7 @@ void GifDecoder::parseCommentExtension() {
 #endif
 
     // Read block length
-    byte len = readByte();
+    uint8_t len = readByte();
     while (len != 0) {
         // Clear buffer
         memset(tempBuffer, 0, sizeof(tempBuffer));
@@ -414,7 +416,7 @@ int GifDecoder::parseGIFFileTerminator() {
     Serial.println("\nProcessing file terminator");
 #endif
 
-    byte b = readByte();
+    uint8_t b = readByte();
     if (b != 0x3B) {
 
 #if GIFDEBUG == 1 && DEBUG_PROCESSING_FILE_TERM == 1
@@ -472,7 +474,7 @@ void GifDecoder::parseTableBasedImage() {
 #endif
 
     // Does this image have a local color table ?
-    boolean localColorTable =  ((tbiPackedBits & COLORTBLFLAG) != 0);
+    bool localColorTable =  ((tbiPackedBits & COLORTBLFLAG) != 0);
 
     if (localColorTable) {
         int colorBits = ((tbiPackedBits & 7) + 1);
@@ -595,7 +597,7 @@ void GifDecoder::parseTableBasedImage() {
 
     // Initialize the LZW decoder for this frame
     lzw_decode_init(lzwCodeSize, readIntoBuffer);
-    lzw_setTempBuffer((byte*)tempBuffer);
+    lzw_setTempBuffer((uint8_t*)tempBuffer);
 
     // Make sure there is at least some delay between frames
     if (frameDelay < 1) {
@@ -619,7 +621,7 @@ int GifDecoder::parseData() {
     Serial.println("\nParsing Data Block");
 #endif
 
-    boolean parsedFrame = false;
+    bool parsedFrame = false;
     while (!parsedFrame) {
 
 #if GIFDEBUG == 1 && DEBUG_WAIT_FOR_KEY_PRESS == 1
@@ -628,7 +630,7 @@ int GifDecoder::parseData() {
 #endif
 
         // Determine what kind of data to process
-        byte b = readByte();
+        uint8_t b = readByte();
 
         if (b == 0x2c) {
             // Parse table based image

@@ -63,15 +63,15 @@ int slot;                   // Last read code
 int fc, oc;
 int bs;                     // Current buffer size for GIF
 int bcnt;
-byte *sp;
+uint8_t *sp;
 get_bytes_callback getBytesCallback;
-byte * temp_buffer;
+uint8_t * temp_buffer;
 
-byte stack  [LZW_SIZTABLE];
-byte suffix [LZW_SIZTABLE];
+uint8_t stack  [LZW_SIZTABLE];
+uint8_t suffix [LZW_SIZTABLE];
 uint16_t prefix [LZW_SIZTABLE];
 
-void GifDecoder::lzw_setTempBuffer(byte * tempBuffer) {
+void GifDecoder::lzw_setTempBuffer(uint8_t * tempBuffer) {
     temp_buffer = tempBuffer;
 }
 
@@ -125,7 +125,7 @@ int lzw_get_code() {
 //   buf 8 bit output buffer
 //   len number of pixels to decode
 //   returns the number of bytes decoded
-int GifDecoder::lzw_decode(byte *buf, int len, byte *bufend) {
+int GifDecoder::lzw_decode(uint8_t *buf, int len, uint8_t *bufend) {
     int l, c, code;
 
 #if LZWDEBUG == 1
