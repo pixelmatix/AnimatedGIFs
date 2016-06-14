@@ -78,8 +78,6 @@ const int defaultBrightness = 255;
 const rgb24 COLOR_BLACK = {
     0, 0, 0 };
 
-GifDecoder decoder;
-
 /* SmartMatrix configuration and memory allocation */
 #define COLOR_DEPTH 24                  // known working: 24, 48 - If the sketch uses type `rgb24` directly, COLOR_DEPTH must be 24
 const uint8_t kMatrixWidth = 32;        // known working: 32, 64, 96, 128
@@ -96,6 +94,14 @@ SMARTMATRIX_ALLOCATE_BACKGROUND_LAYER(backgroundLayer, kMatrixWidth, kMatrixHeig
 #if ENABLE_SCROLLING == 1
 SMARTMATRIX_ALLOCATE_SCROLLING_LAYER(scrollingLayer, kMatrixWidth, kMatrixHeight, COLOR_DEPTH, kScrollingLayerOptions);
 #endif
+
+/* template parameters are maxGifWidth, maxGifHeight, lzwMaxBits
+ * 
+ * The lzwMaxBits value of 12 supports all GIFs, but uses 16kB RAM
+ * lzwMaxBits can be set to 10 or 11 for small displays, 12 for large displays
+ * All 32x32-pixel GIFs tested work with 11, most work with 10
+ */
+GifDecoder<kMatrixWidth, kMatrixHeight, 12> decoder;
 
 // Chip select for SD card on the SmartMatrix Shield
 #define SD_CS 15
