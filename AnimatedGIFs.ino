@@ -131,7 +131,6 @@ void setup() {
     randomSeed(analogRead(14));
 
     Serial.begin(115200);
-    while(!Serial);
 
     // Initialize matrix
     matrix.addLayer(&backgroundLayer); 
