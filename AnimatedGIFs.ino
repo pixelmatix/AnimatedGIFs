@@ -106,6 +106,8 @@ SMARTMATRIX_ALLOCATE_SCROLLING_LAYER(scrollingLayer, kMatrixWidth, kMatrixHeight
 
 int num_files;
 
+File file;
+
 void screenClearCallback(void) {
   backgroundLayer.fillScreen({0,0,0});
 }
@@ -118,16 +120,38 @@ void drawPixelCallback(int16_t x, int16_t y, uint8_t red, uint8_t green, uint8_t
   backgroundLayer.drawPixel(x, y, {red, green, blue});
 }
 
+bool fileSeekCallback(unsigned long position) {
+    return file.seek(position);
+}
+
+unsigned long filePositionCallback(void) {
+    return file.position();
+}
+
+int fileReadCallback(void) {
+    return file.read();
+}
+
+int fileReadBlockCallback(void * buffer, int numberOfBytes) {
+    return file.read(buffer, numberOfBytes);
+}
+
 // Setup method runs once, when the sketch starts
 void setup() {
     decoder.setScreenClearCallback(screenClearCallback);
     decoder.setUpdateScreenCallback(updateScreenCallback);
     decoder.setDrawPixelCallback(drawPixelCallback);
 
+    decoder.setFileSeekCallback(fileSeekCallback);
+    decoder.setFilePositionCallback(filePositionCallback);
+    decoder.setFileReadCallback(fileReadCallback);
+    decoder.setFileReadBlockCallback(fileReadBlockCallback);
+
     // Seed the random number generator
     randomSeed(analogRead(14));
 
     Serial.begin(115200);
+    while(!Serial);
 
     // Initialize matrix
     matrix.addLayer(&backgroundLayer); 
@@ -188,18 +212,31 @@ void loop() {
         // matrix.fillScreen(COLOR_BLACK);
         // matrix.swapBuffers();
 
+        if(file)
+            file.close();
+
+        // Calculate time in the future to terminate animation
+        futureTime = millis() + (DISPLAY_TIME_SECONDS * 1000);
+
         getGIFFilenameByIndex(GIF_DIRECTORY, index++, pathname);
         if (index >= num_files) {
             index = 0;
         }
 
-        // Calculate time in the future to terminate animation
-        futureTime = millis() + (DISPLAY_TIME_SECONDS * 1000);
+        Serial.print("Pathname: ");
+        Serial.println(pathname);
 
-        decoder.openFile(pathname);
+        // Attempt to open the file for reading
+        file = SD.open(pathname);
+        if (!file) {
+            Serial.println("Error opening GIF file");
+            continue;
+        }
+
+        decoder.startDecoding();
 
         while (futureTime > millis()) {
-            decoder.processFrame();
+            decoder.decodeFrame();
         }
     }
 }

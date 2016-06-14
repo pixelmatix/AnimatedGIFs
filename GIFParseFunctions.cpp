@@ -52,10 +52,7 @@
 #endif
 
 #include <Arduino.h>
-#include <SD.h>
 #include "GIFDecoder.h"
-
-File file;
 
 const int WIDTH  = 32;
 const int HEIGHT = 32;
@@ -131,6 +128,10 @@ callback screenClearCallback;
 callback updateScreenCallback;
 pixel_callback drawPixelCallback;
 callback startDrawingCallback;
+file_seek_callback fileSeekCallback;
+file_position_callback filePositionCallback;
+file_read_callback fileReadCallback;
+file_read_block_callback fileReadBlockCallback;
 
 void GifDecoder::setStartDrawingCallback(callback f) {
     startDrawingCallback = f;
@@ -148,15 +149,31 @@ void GifDecoder::setScreenClearCallback(callback f) {
     screenClearCallback = f;
 }
 
+void GifDecoder::setFileSeekCallback(file_seek_callback f) {
+    fileSeekCallback = f;
+}
+
+void GifDecoder::setFilePositionCallback(file_position_callback f) {
+    filePositionCallback = f;
+}
+
+void GifDecoder::setFileReadCallback(file_read_callback f) {
+    fileReadCallback = f;
+}
+
+void GifDecoder::setFileReadBlockCallback(file_read_block_callback f) {
+    fileReadBlockCallback = f;
+}
+
 // Backup the read stream by n bytes
 void GifDecoder::backUpStream(int n) {
-    file.seek(file.position() - n);
+    fileSeekCallback(filePositionCallback() - n);
 }
 
 // Read a file byte
 int GifDecoder::readByte() {
 
-    int b = file.read();
+    int b = fileReadCallback();
     if (b == -1) {
         Serial.println("Read error or EOF occurred");
     }
@@ -174,7 +191,7 @@ int GifDecoder::readWord() {
 // Read the specified number of bytes into the specified buffer
 int GifDecoder::readIntoBuffer(void *buffer, int numberOfBytes) {
 
-    int result = file.read(buffer, numberOfBytes);
+    int result = fileReadBlockCallback(buffer, numberOfBytes);
     if (result == -1) {
         Serial.println("Read error or EOF occurred");
     }
@@ -421,9 +438,9 @@ void GifDecoder::parseTableBasedImage() {
 
 #if GIFDEBUG == 1 && DEBUG_PARSING_DATA == 1
     Serial.println("File Position: ");
-    Serial.println(file.position());
+    Serial.println(filePositionCallback());
     Serial.println("File Size: ");
-    Serial.println(file.size());
+    //Serial.println(file.size());
 #endif
 
     // Parse image descriptor
@@ -540,10 +557,10 @@ void GifDecoder::parseTableBasedImage() {
     Serial.print("LzwCodeSize: ");
     Serial.println(lzwCodeSize);
     Serial.println("File Position Before: ");
-    Serial.println(file.position());
+    Serial.println(filePositionCallback());
 #endif
 
-    unsigned long filePositionBefore = file.position();
+    unsigned long filePositionBefore = filePositionCallback();
 
     // Gather the lzw image data
     // NOTE: the dataBlockSize byte is left in the data as the lzw decoder needs it
@@ -556,7 +573,7 @@ void GifDecoder::parseTableBasedImage() {
 #endif
         backUpStream(1);
         dataBlockSize++;
-        file.seek(file.position() + dataBlockSize);
+        fileSeekCallback(filePositionCallback() + dataBlockSize);
 
         offset += dataBlockSize;
         dataBlockSize = readByte();
@@ -566,13 +583,13 @@ void GifDecoder::parseTableBasedImage() {
     Serial.print("total lzwImageData Size: ");
     Serial.println(offset);
     Serial.println("File Position Test: ");
-    Serial.println(file.position());
+    Serial.println(filePositionCallback());
 #endif
 
     // this is the position where GIF decoding needs to pick up after decompressing frame
-    unsigned long filePositionAfter = file.position();
+    unsigned long filePositionAfter = filePositionCallback();
 
-    file.seek(filePositionBefore);
+    fileSeekCallback(filePositionBefore);
 
     // Process the animation frame for display
 
@@ -597,11 +614,6 @@ void GifDecoder::parseTableBasedImage() {
 int GifDecoder::parseData() {
     if(nextFrameTime_ms > millis()) 
         return ERROR_WAITING;
-
-    if(!file) {
-        Serial.println("\nFile not open");
-        return ERROR_FILEOPEN;
-    }
 
 #if GIFDEBUG == 1 && DEBUG_PARSING_DATA == 1
     Serial.println("\nParsing Data Block");
@@ -673,28 +685,17 @@ int GifDecoder::parseData() {
     return ERROR_NONE;
 }
 
-int GifDecoder::openFile(const char *pathname) {
+int GifDecoder::startDecoding(void) {
     // Initialize variables
     keyFrame = true;
     prevDisposalMethod = DISPOSAL_NONE;
     transparentColorIndex = NO_TRANSPARENT_INDEX;
+    nextFrameTime_ms = 0;
+    fileSeekCallback(0);
 
-    Serial.print("Pathname: ");
-    Serial.println(pathname);
-
-    if(file)
-        file.close();
-
-    // Attempt to open the file for reading
-    file = SD.open(pathname);
-    if (!file) {
-        Serial.println("Error opening GIF file");
-        return ERROR_FILEOPEN;
-    }
     // Validate the header
     if (! parseGifHeader()) {
         Serial.println("Not a GIF file");
-        file.close();
         return ERROR_FILENOTGIF;
     }
     // If we get here we have a gif file to process
@@ -708,24 +709,24 @@ int GifDecoder::openFile(const char *pathname) {
     return ERROR_NONE;
 }
 
-int GifDecoder::processFrame(void) {
+int GifDecoder::decodeFrame(void) {
     // Parse gif data
     int result = parseData();
     if (result < ERROR_NONE) {
         Serial.println("Error: ");
         Serial.println(result);
         Serial.println(" occurred during parsing of data");
-        file.close();
         return result;
     }
 
     if (result == ERROR_DONE_PARSING) {
+        //startDecoding();
         // Initialize variables like with a new file
         keyFrame = true;
         prevDisposalMethod = DISPOSAL_NONE;
         transparentColorIndex = NO_TRANSPARENT_INDEX;
         nextFrameTime_ms = 0;
-        file.seek(0);
+        fileSeekCallback(0);
 
         // parse Gif Header like with a new file
         parseGifHeader();
@@ -774,7 +775,7 @@ void GifDecoder::decompressAndDisplayFrame(unsigned long filePositionAfter) {
 
 #if GIFDEBUG == 1 && DEBUG_DECOMPRESS_AND_DISPLAY == 1
     Serial.println("File Position After: ");
-    Serial.println(file.position());
+    Serial.println(filePositionCallback());
 #endif
 
 #if GIFDEBUG == 1 && DEBUG_WAIT_FOR_KEY_PRESS == 1
@@ -783,7 +784,7 @@ void GifDecoder::decompressAndDisplayFrame(unsigned long filePositionAfter) {
 #endif
 
     // LZW doesn't parse through all the data, manually set position
-    file.seek(filePositionAfter);
+    fileSeekCallback(filePositionAfter);
 
     // Optional callback can be used to get drawing routines ready
     if(startDrawingCallback)
