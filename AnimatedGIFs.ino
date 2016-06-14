@@ -178,31 +178,26 @@ void setup() {
 
 
 void loop() {
-    unsigned long futureTime;
+    static unsigned long futureTime;
 
     int index = random(num_files);
 
-    // Do forever
-    while (true) {
-        // Can clear screen for new animation here, but this might cause flicker with short animations
-        // matrix.fillScreen(COLOR_BLACK);
-        // matrix.swapBuffers();
-
-        // Calculate time in the future to terminate animation
-        futureTime = millis() + (DISPLAY_TIME_SECONDS * 1000);
-
+    if(futureTime < millis()) {
         if (++index >= num_files) {
             index = 0;
         }
 
-        if (openGifFilenameByIndex(GIF_DIRECTORY, index) < 0) {
-            continue;
-        }
+        if (openGifFilenameByIndex(GIF_DIRECTORY, index) >= 0) {
+            // Can clear screen for new animation here, but this might cause flicker with short animations
+            // matrix.fillScreen(COLOR_BLACK);
+            // matrix.swapBuffers();
 
-        decoder.startDecoding();
+            decoder.startDecoding();
 
-        while (futureTime > millis()) {
-            decoder.decodeFrame();
+            // Calculate time in the future to terminate animation
+            futureTime = millis() + (DISPLAY_TIME_SECONDS * 1000);
         }
     }
+
+    decoder.decodeFrame();
 }
