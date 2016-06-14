@@ -196,8 +196,10 @@ void loop() {
         // Calculate time in the future to terminate animation
         futureTime = millis() + (DISPLAY_TIME_SECONDS * 1000);
 
+        decoder.openFile(pathname);
+
         while (futureTime > millis()) {
-            decoder.processGIFFile(pathname);
+            decoder.processFrame();
         }
     }
 }

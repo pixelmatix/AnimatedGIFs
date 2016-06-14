@@ -16,7 +16,8 @@ typedef struct rgb_24 {
 
 class GifDecoder {
 public:
-    int processGIFFile(const char * pathname);
+    int openFile(const char * pathname);
+    int processFrame(void);
     
     void setScreenClearCallback(callback f);
     void setUpdateScreenCallback(callback f);

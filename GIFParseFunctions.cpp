@@ -63,6 +63,8 @@ const int HEIGHT = 32;
 
 // Error codes
 #define ERROR_NONE		           0
+#define ERROR_DONE_PARSING         1
+#define ERROR_WAITING              2
 #define ERROR_FILEOPEN		       -1
 #define ERROR_FILENOTGIF	       -2
 #define ERROR_BADGIFFORMAT         -3
@@ -593,13 +595,20 @@ void GifDecoder::parseTableBasedImage() {
 
 // Parse gif data
 int GifDecoder::parseData() {
+    if(nextFrameTime_ms > millis()) 
+        return ERROR_WAITING;
+
+    if(!file) {
+        Serial.println("\nFile not open");
+        return ERROR_FILEOPEN;
+    }
 
 #if GIFDEBUG == 1 && DEBUG_PARSING_DATA == 1
     Serial.println("\nParsing Data Block");
 #endif
 
-    boolean done = false;
-    while (! done) {
+    boolean parsedFrame = false;
+    while (!parsedFrame) {
 
 #if GIFDEBUG == 1 && DEBUG_WAIT_FOR_KEY_PRESS == 1
     Serial.println("\nPress Key For Next");
@@ -615,6 +624,7 @@ int GifDecoder::parseData() {
     Serial.println("\nParsing Table Based");
 #endif
             parseTableBasedImage();
+            parsedFrame = true;
 
         }
         else if (b == 0x21) {
@@ -653,18 +663,17 @@ int GifDecoder::parseData() {
 #if GIFDEBUG == 1 && DEBUG_PARSING_DATA == 1
     Serial.println("\nParsing Done");
 #endif
-            done = true;
 
             // Push unprocessed byte back into the stream for later processing
             backUpStream(1);
+
+            return ERROR_DONE_PARSING;
         }
     }
     return ERROR_NONE;
 }
 
-// Attempt to parse the gif file
-int GifDecoder::processGIFFile(const char *pathname) {
-
+int GifDecoder::openFile(const char *pathname) {
     // Initialize variables
     keyFrame = true;
     prevDisposalMethod = DISPOSAL_NONE;
@@ -696,20 +705,38 @@ int GifDecoder::processGIFFile(const char *pathname) {
     // Parse the global color table
     parseGlobalColorTable();
 
+    return ERROR_NONE;
+}
+
+int GifDecoder::processFrame(void) {
     // Parse gif data
     int result = parseData();
-    if (result != ERROR_NONE) {
+    if (result < ERROR_NONE) {
         Serial.println("Error: ");
         Serial.println(result);
         Serial.println(" occurred during parsing of data");
         file.close();
         return result;
     }
-    // Parse the gif file terminator
-    result = parseGIFFileTerminator();
-    file.close();
 
-    Serial.println("Success");
+    if (result == ERROR_DONE_PARSING) {
+        // Initialize variables like with a new file
+        keyFrame = true;
+        prevDisposalMethod = DISPOSAL_NONE;
+        transparentColorIndex = NO_TRANSPARENT_INDEX;
+        nextFrameTime_ms = 0;
+        file.seek(0);
+
+        // parse Gif Header like with a new file
+        parseGifHeader();
+
+        // Parse the logical screen descriptor
+        parseLogicalScreenDescriptor();
+
+        // Parse the global color table
+        parseGlobalColorTable();
+    }
+
     return result;
 }
 
