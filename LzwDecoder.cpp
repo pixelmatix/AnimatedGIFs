@@ -29,7 +29,12 @@
 
 #define LZWDEBUG 0
 
+#if defined (ARDUINO)
 #include <Arduino.h>
+#elif defined (SPARK)
+#include "Application.h"
+#endif
+
 #include "GIFDecoder.h"
 
 // LZW constants

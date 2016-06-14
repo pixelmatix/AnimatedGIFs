@@ -28,6 +28,12 @@
 
 #define GIFDEBUG 0
 
+#if defined (ARDUINO)
+#include <Arduino.h>
+#elif defined (SPARK)
+#include "Application.h"
+#endif
+
 #if GIFDEBUG == 1
 #define DEBUG_SCREEN_DESCRIPTOR                             1
 #define DEBUG_GLOBAL_COLOR_TABLE                            1
@@ -51,7 +57,6 @@
 
 #endif
 
-#include <Arduino.h>
 #include "GIFDecoder.h"
 
 const int WIDTH  = 32;
