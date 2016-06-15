@@ -32,7 +32,7 @@
 #if defined (ARDUINO)
 #include <Arduino.h>
 #elif defined (SPARK)
-#include "Application.h"
+#include "application.h"
 #endif
 
 #include "GIFDecoder.h"

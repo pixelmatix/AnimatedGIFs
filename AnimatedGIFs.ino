@@ -67,7 +67,7 @@
 #if defined (ARDUINO)
 #include <SmartMatrix3.h>
 #elif defined (SPARK)
-#include "Application.h"
+#include "application.h"
 #include "SmartMatrix3_Photon_Apa102/SmartMatrix3_Photon_Apa102.h"
 #endif
 
