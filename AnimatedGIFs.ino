@@ -64,7 +64,13 @@
  *    only play GIFs that are size WIDTHxHEIGHT or smaller
  */
 
+#if defined (ARDUINO)
 #include <SmartMatrix3.h>
+#elif defined (SPARK)
+#include "Application.h"
+#include "SmartMatrix3_Photon_Apa102/SmartMatrix3_Photon_Apa102.h"
+#endif
+
 #include "GIFDecoder.h"
 #include "FilenameFunctions.h"
 
@@ -103,8 +109,12 @@ SMARTMATRIX_ALLOCATE_SCROLLING_LAYER(scrollingLayer, kMatrixWidth, kMatrixHeight
  */
 GifDecoder<kMatrixWidth, kMatrixHeight, 12> decoder;
 
-// Chip select for SD card on the SmartMatrix Shield
+// Chip select for SD card on the SmartMatrix Shield or Photon
+#if defined (ARDUINO)
 #define SD_CS 15
+#elif defined (SPARK)
+#define SD_CS SS
+#endif
 
 #define GIF_DIRECTORY "/gifs/"
 

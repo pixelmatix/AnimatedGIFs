@@ -6,7 +6,11 @@
  * Written by: Craig A. Lindley
  */
 
+#if defined (ARDUINO)
 #include <SD.h>
+#elif defined (SPARK)
+#include "sd-card-library-photon-compat/sd-card-library-photon-compat.h"
+#endif
 
 File file;
 
