@@ -35,7 +35,7 @@
 #include "application.h"
 #endif
 
-#include "GIFDecoder.h"
+#include "GifDecoder.h"
 
 template <int maxGifWidth, int maxGifHeight, int lzwMaxBits>
 void GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::lzw_setTempBuffer(uint8_t * tempBuffer) {

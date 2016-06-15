@@ -59,7 +59,7 @@
 
 #endif
 
-#include "GIFDecoder.h"
+#include "GifDecoder.h"
 
 
 // Error codes

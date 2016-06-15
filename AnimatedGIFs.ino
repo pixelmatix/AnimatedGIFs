@@ -71,7 +71,7 @@
 #include "SmartMatrix3_Photon_Apa102/SmartMatrix3_Photon_Apa102.h"
 #endif
 
-#include "GIFDecoder.h"
+#include "GifDecoder.h"
 #include "FilenameFunctions.h"
 
 #define DISPLAY_TIME_SECONDS 10
