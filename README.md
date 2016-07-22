@@ -16,7 +16,7 @@ CS (default) |  15
 This code first looks for .gif files in the /gifs/ directory (you can customize this with the GIF_DIRECTORY definition) then plays random GIFs in the directory, looping each GIF for DISPLAY_TIME_SECONDS
 
 This example is meant to give you an idea of how to add GIF playback to your own sketch.  For a project that adds GIF playback with other features, take a look at [Light Appliance](https://github.com/CraigLindley/LightAppliance) and [Aurora](https://github.com/pixelmatix/aurora).  
-If you want to use this a library, copy the whole directory to your Arduino directory under /libraries/AnimatedGIFs. An example for usage is [AnimatedGIFs.ino](AnimatedGIFs/examples/AnimatedGIFs/AnimatedGIFs.ino) in the examples directory.
+If you want to use this a library, copy the whole directory to your Arduino directory under /libraries/AnimatedGIFs. A usage example is in [AnimatedGIFs.ino](examples/AnimatedGIFs/AnimatedGIFs.ino) in the examples directory.
 
 If you find any GIFs that won't play properly, please attach them to a new
 Issue post in the GitHub repo [here](https://github.com/pixelmatix/AnimatedGIFs/issues):
