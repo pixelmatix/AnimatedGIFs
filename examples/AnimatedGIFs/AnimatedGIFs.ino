@@ -138,10 +138,10 @@ void setup() {
     decoder.setUpdateScreenCallback(updateScreenCallback);
     decoder.setDrawPixelCallback(drawPixelCallback);
 
-    decoder.setFileSeekCallback(fileSeekCallback);
-    decoder.setFilePositionCallback(filePositionCallback);
-    decoder.setFileReadCallback(fileReadCallback);
-    decoder.setFileReadBlockCallback(fileReadBlockCallback);
+    decoder.setFileSeekCallback(FilenameFunctions::fileSeekCallback);
+    decoder.setFilePositionCallback(FilenameFunctions::filePositionCallback);
+    decoder.setFileReadCallback(FilenameFunctions::fileReadCallback);
+    decoder.setFileReadBlockCallback(FilenameFunctions::fileReadBlockCallback);
 
     // Seed the random number generator
     randomSeed(analogRead(14));
@@ -164,7 +164,7 @@ void setup() {
     backgroundLayer.fillScreen(COLOR_BLACK);
     backgroundLayer.swapBuffers();
 
-    if(initSdCard(SD_CS) < 0) {
+    if(FilenameFunctions::initSdCard(SD_CS) < 0) {
 #if ENABLE_SCROLLING == 1
         scrollingLayer.start("No SD card", -1);
 #endif
@@ -173,7 +173,7 @@ void setup() {
     }
 
     // Determine how many animated GIF files exist
-    num_files = enumerateGIFFiles(GIF_DIRECTORY, false);
+    num_files = FilenameFunctions::enumerateGIFFiles(GIF_DIRECTORY, false);
 
     if(num_files < 0) {
 #if ENABLE_SCROLLING == 1
@@ -203,7 +203,7 @@ void loop() {
             index = 0;
         }
 
-        if (openGifFilenameByIndex(GIF_DIRECTORY, index) >= 0) {
+        if (FilenameFunctions::openGifFilenameByIndex(GIF_DIRECTORY, index) >= 0) {
             // Can clear screen for new animation here, but this might cause flicker with short animations
             // matrix.fillScreen(COLOR_BLACK);
             // matrix.swapBuffers();
