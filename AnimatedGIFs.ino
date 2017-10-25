@@ -56,16 +56,15 @@
 
 /*
  * CONFIGURATION:
+ *  - If you're using SmartLED Shield V4 (or above), uncomment the line that includes <SmartMatrixShieldV4.h>
  *  - update the "SmartMatrix configuration and memory allocation" section to match the width and height and other configuration of your display
- *  - Note for 128x32 and 64x64 displays - need to reduce RAM:
+ *  - Note for 128x32 and 64x64 displays with Teensy 3.2 - need to reduce RAM:
  *    set kRefreshDepth=24 and kDmaBufferRows=2 or set USB Type: "None" in Arduino,
  *    decrease refreshRate in setup() to 90 or lower to get good an accurate GIF frame rate
- *  - WIDTH and HEIGHT are defined in GIFParseFunctions.cpp, update to match the size of your GIFs
- *    only play GIFs that are size WIDTHxHEIGHT or smaller
  */
 
 #if defined (ARDUINO)
-//#include <SmartMatrixShieldV4.h>  // uncomment this line for SmartMatrix Shield V4 (needs to be before #include <SmartMatrix3.h>)
+//#include <SmartLEDShieldV4.h>  // uncomment this line for SmartLED Shield V4 (needs to be before #include <SmartMatrix3.h>)
 #include <SmartMatrix3.h>
 #elif defined (SPARK)
 #include "application.h"
