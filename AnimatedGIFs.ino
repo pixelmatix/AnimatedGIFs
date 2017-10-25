@@ -65,6 +65,7 @@
  */
 
 #if defined (ARDUINO)
+//#include <SmartMatrixShieldV4.h>  // uncomment this line for SmartMatrix Shield V4 (needs to be before #include <SmartMatrix3.h>)
 #include <SmartMatrix3.h>
 #elif defined (SPARK)
 #include "application.h"
