@@ -61,6 +61,7 @@
  *  - Note for 128x32 and 64x64 displays with Teensy 3.2 - need to reduce RAM:
  *    set kRefreshDepth=24 and kDmaBufferRows=2 or set USB Type: "None" in Arduino,
  *    decrease refreshRate in setup() to 90 or lower to get good an accurate GIF frame rate
+ *  - Set the chip select pin for your board.  On Teensy 3.5/3.6, the onboard microSD CS pin is "BUILTIN_SDCARD"
  */
 
 #if defined (ARDUINO)
@@ -71,6 +72,7 @@
 #include "SmartMatrix3_Photon_Apa102/SmartMatrix3_Photon_Apa102.h"
 #endif
 
+#include <SD.h>
 #include "GifDecoder.h"
 #include "FilenameFunctions.h"
 
@@ -111,6 +113,7 @@ GifDecoder<kMatrixWidth, kMatrixHeight, 12> decoder;
 
 // Chip select for SD card on the SmartMatrix Shield or Photon
 #if defined (ARDUINO)
+//#define SD_CS BUILTIN_SDCARD
 #define SD_CS 15
 #elif defined (SPARK)
 #define SD_CS SS
