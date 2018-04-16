@@ -34,6 +34,11 @@
 #include "application.h"
 #endif
 
+// This file contains C code, and ESP32 Arduino has changed to use the C++ template version of min()/max() which we can't use with C, so we can't depend on a #define min() from Arduino anymore
+#ifndef min
+#define min(a,b) ((a)<(b)?(a):(b))
+#endif
+
 #include "GifDecoder.h"
 
 #if GIFDEBUG == 1

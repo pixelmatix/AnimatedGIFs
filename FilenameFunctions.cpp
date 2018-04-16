@@ -29,7 +29,7 @@ int fileReadCallback(void) {
 }
 
 int fileReadBlockCallback(void * buffer, int numberOfBytes) {
-    return file.read(buffer, numberOfBytes);
+    return file.read((uint8_t*)buffer, numberOfBytes);
 }
 
 int initSdCard(int chipSelectPin) {
@@ -41,18 +41,29 @@ int initSdCard(int chipSelectPin) {
 }
 
 bool isAnimationFile(const char filename []) {
-    if (filename[0] == '_')
-        return false;
+    String filenameString(filename);
 
-    if (filename[0] == '~')
-        return false;
+#if defined(ESP32)
+    // ESP32 filename includes the full path, so need to remove the path before looking at the filename
+    int pathindex = filenameString.lastIndexOf("/");
+    if(pathindex >= 0)
+        filenameString.remove(0, pathindex + 1);
+#endif
 
-    if (filename[0] == '.')
-        return false;
+    Serial.print(filenameString);
 
-    String filenameString = String(filename).toUpperCase();
-    if (filenameString.endsWith(".GIF") != 1)
+    if ((filenameString[0] == '_') || (filenameString[0] == '~') || (filenameString[0] == '.')) {
+        Serial.println(" ignoring: leading _/~/. character");
         return false;
+    }
+
+    filenameString.toUpperCase();
+    if (filenameString.endsWith(".GIF") != 1) {
+        Serial.println(" ignoring: doesn't end of .GIF");
+        return false;
+    }
+
+    Serial.println();
 
     return true;
 }
@@ -100,16 +111,19 @@ void getGIFFilenameByIndex(const char *directoryName, int index, char *pnBuffer)
 
     File file = directory.openNextFile();
     while (file && (index >= 0)) {
-        filename = file.name();
+        filename = (char*)file.name();
 
         if (isAnimationFile(file.name())) {
             index--;
 
-            // Copy the directory name into the pathname buffer
+#if !defined(ESP32)
+            // Copy the directory name into the pathname buffer - ESP32 SD Library includes the full path name in the filename, so no need to add the directory name
             strcpy(pnBuffer, directoryName);
-
             // Append the filename to the pathname
             strcat(pnBuffer, filename);
+#else
+            strcpy(pnBuffer, filename);
+#endif
         }
 
         file.close();

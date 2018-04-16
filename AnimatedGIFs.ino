@@ -112,14 +112,22 @@ SMARTMATRIX_ALLOCATE_SCROLLING_LAYER(scrollingLayer, kMatrixWidth, kMatrixHeight
 GifDecoder<kMatrixWidth, kMatrixHeight, 12> decoder;
 
 // Chip select for SD card on the SmartMatrix Shield or Photon
-#if defined (ARDUINO)
-//#define SD_CS BUILTIN_SDCARD
-#define SD_CS 15
+#if defined(ESP32)
+    #define SD_CS 5
+#elif defined (ARDUINO)
+    #define SD_CS 15
+    //#define SD_CS BUILTIN_SDCARD
 #elif defined (SPARK)
-#define SD_CS SS
+    #define SD_CS SS
 #endif
 
-#define GIF_DIRECTORY "/gifs/"
+#if defined(ESP32)
+    // ESP32 SD Library can't handle a trailing slash in the directory name
+    #define GIF_DIRECTORY "/gifs"
+#else
+    // Teensy SD Library requires a trailing slash in the directory name
+    #define GIF_DIRECTORY "/gifs/"
+#endif
 
 int num_files;
 
