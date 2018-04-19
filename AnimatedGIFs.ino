@@ -158,6 +158,8 @@ void setup() {
     randomSeed(analogRead(14));
 
     Serial.begin(115200);
+    Serial.println("Starting AnimatedGIFs Sketch");
+
 
     // Initialize matrix
     matrix.addLayer(&backgroundLayer); 
@@ -166,22 +168,39 @@ void setup() {
 #endif
 
     matrix.setBrightness(defaultBrightness);
-    matrix.begin();
 
-    //matrix.setRefreshRate(90);
     // for large panels, set the refresh rate lower to leave more CPU time to decoding GIFs (needed if GIFs are playing back slowly)
+    //matrix.setRefreshRate(90);
+
+    // for large panels on ESP32, set the calculation refresh rate divider lower to leave more CPU time to decoding GIFs (needed if GIFs are playing back slowly)
+    //matrix.setCalcRefreshRateDivider(4);
+
+#if !defined(ESP32)
+    matrix.begin();
+#endif
 
     // Clear screen
     backgroundLayer.fillScreen(COLOR_BLACK);
-    backgroundLayer.swapBuffers();
+    backgroundLayer.swapBuffers(false);
 
     if(initSdCard(SD_CS) < 0) {
 #if ENABLE_SCROLLING == 1
         scrollingLayer.start("No SD card", -1);
 #endif
         Serial.println("No SD card");
+        // for ESP32 we need to allocate SmartMatrix DMA buffers after we (in this case fail to) initialize the SD card to avoid using up too much memory
+#if defined(ESP32)
+        matrix.begin();
+#endif
         while(1);
     }
+
+    // for ESP32 we need to allocate SmartMatrix DMA buffers after initializing the SD card to avoid using up too much memory
+#if defined(ESP32)
+    matrix.begin();
+    // If you don't see this message, SmartMatrix Library is likely using up too much CPU, lower the refresh rate or increase the calc refresh rate divider
+    Serial.println("matrix.begin() returned");
+#endif
 
     // Determine how many animated GIF files exist
     num_files = enumerateGIFFiles(GIF_DIRECTORY, false);
