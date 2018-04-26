@@ -39,6 +39,8 @@
  * CLK          |  13
  * CS (default) |  15
  *
+ * Wiring for ESP32 follows the default for the ESP32 SD Library, see: https://github.com/espressif/arduino-esp32/tree/master/libraries/SDis is on the default Teensy 3.1 SPI pins, and chip select can be on any GPIO,
+ *
  * This code first looks for .gif files in the /gifs/ directory
  * (customize below with the GIF_DIRECTORY definition) then plays random GIFs in the directory,
  * looping each GIF for DISPLAY_TIME_SECONDS
@@ -62,6 +64,9 @@
  *    set kRefreshDepth=24 and kDmaBufferRows=2 or set USB Type: "None" in Arduino,
  *    decrease refreshRate in setup() to 90 or lower to get good an accurate GIF frame rate
  *  - Set the chip select pin for your board.  On Teensy 3.5/3.6, the onboard microSD CS pin is "BUILTIN_SDCARD"
+ *  - For ESP32 and large panels, you don't need to lower the refreshRate, but you can lower the frameRate (number of times the refresh buffer
+ *    is updaed with new data per second), giving more time for the CPU to decode the GIF.
+ *    Use matrix.setMaxCalculationCpuPercentage() or matrix.setCalcRefreshRateDivider()
  */
 
 #if defined (ARDUINO)
@@ -169,14 +174,23 @@ void setup() {
 
     matrix.setBrightness(defaultBrightness);
 
-    // for large panels, set the refresh rate lower to leave more CPU time to decoding GIFs (needed if GIFs are playing back slowly)
-    //matrix.setRefreshRate(90);
 
-    // for large panels on ESP32, set the calculation refresh rate divider lower to leave more CPU time to decoding GIFs (needed if GIFs are playing back slowly)
-    //matrix.setCalcRefreshRateDivider(4);
+    // for large panels, may want to set the refresh rate lower to leave more CPU time to decoding GIFs (needed if GIFs are playing back slowly)
+    //matrix.setRefreshRate(90);
 
 #if !defined(ESP32)
     matrix.begin();
+#endif
+
+#if defined(ESP32)
+    // for large panels on ESP32, may want to set the max percentage time dedicated to updating the refresh frames lower, to leave more CPU time to decoding GIFs (needed if GIFs are playing back slowly)
+    //matrix.setMaxCalculationCpuPercentage(50);
+
+    // alternatively, for large panels on ESP32, may want to set the calculation refresh rate divider lower to leave more CPU time to decoding GIFs (needed if GIFs are playing back slowly) - this has the same effect as matrix.setMaxCalculationCpuPercentage() but is set with a different parameter
+    //matrix.setCalcRefreshRateDivider(4);
+
+    // The ESP32 SD Card library is going to want to malloc about 28000 bytes of DMA-capable RAM, make sure at least that much is left free
+    matrix.begin(28000);
 #endif
 
     // Clear screen
@@ -188,19 +202,10 @@ void setup() {
         scrollingLayer.start("No SD card", -1);
 #endif
         Serial.println("No SD card");
-        // for ESP32 we need to allocate SmartMatrix DMA buffers after we (in this case fail to) initialize the SD card to avoid using up too much memory
-#if defined(ESP32)
-        matrix.begin();
-#endif
         while(1);
     }
 
     // for ESP32 we need to allocate SmartMatrix DMA buffers after initializing the SD card to avoid using up too much memory
-#if defined(ESP32)
-    matrix.begin();
-    // If you don't see this message, SmartMatrix Library is likely using up too much CPU, lower the refresh rate or increase the calc refresh rate divider
-    Serial.println("matrix.begin() returned");
-#endif
 
     // Determine how many animated GIF files exist
     num_files = enumerateGIFFiles(GIF_DIRECTORY, false);
