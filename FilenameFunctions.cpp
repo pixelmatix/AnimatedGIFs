@@ -23,6 +23,7 @@ unsigned long filePositionCallback(void) {
 }
 
 int fileReadCallback(void) {
+    yield();
     return file.read();
 }
 
