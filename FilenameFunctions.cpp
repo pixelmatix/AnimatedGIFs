@@ -6,11 +6,9 @@
  * Written by: Craig A. Lindley
  */
 
-#if defined (ARDUINO)
-#include <SD.h>
-#elif defined (SPARK)
-#include "sd-card-library-photon-compat/sd-card-library-photon-compat.h"
-#endif
+// http://esp8266.github.io/Arduino/versions/2.3.0/doc/filesystem.html#uploading-files-to-file-system
+// esp8266com/esp8266/libraries/SD/src/File.cpp
+#include <FS.h>
 
 File file;
 
@@ -25,6 +23,7 @@ unsigned long filePositionCallback(void) {
 }
 
 int fileReadCallback(void) {
+    yield();
     return file.read();
 }
 
@@ -32,25 +31,14 @@ int fileReadBlockCallback(void * buffer, int numberOfBytes) {
     return file.read((uint8_t*)buffer, numberOfBytes);
 }
 
-int initSdCard(int chipSelectPin) {
-    // initialize the SD card at full speed
-    pinMode(chipSelectPin, OUTPUT);
-    if (!SD.begin(chipSelectPin))
-        return -1;
-    return 0;
-}
+bool isAnimationFile(String filenameString) {
 
-bool isAnimationFile(const char filename []) {
-    String filenameString(filename);
-
-#if defined(ESP32)
+#if defined(ESP32) || defined(ESP8266)
     // ESP32 filename includes the full path, so need to remove the path before looking at the filename
     int pathindex = filenameString.lastIndexOf("/");
     if(pathindex >= 0)
         filenameString.remove(0, pathindex + 1);
 #endif
-
-    Serial.print(filenameString);
 
     if ((filenameString[0] == '_') || (filenameString[0] == '~') || (filenameString[0] == '.')) {
         Serial.println(" ignoring: leading _/~/. character");
@@ -63,8 +51,6 @@ bool isAnimationFile(const char filename []) {
         return false;
     }
 
-    Serial.println();
-
     return true;
 }
 
@@ -73,65 +59,40 @@ int enumerateGIFFiles(const char *directoryName, boolean displayFilenames) {
 
     numberOfFiles = 0;
 
-    File directory = SD.open(directoryName);
-    if (!directory) {
-        return -1;
-    }
+    Dir directory = SPIFFS.openDir(directoryName);
 
-    File file = directory.openNextFile();
-    while (file) {
-        if (isAnimationFile(file.name())) {
+    Serial.print("Enumerate files in dir ");
+    Serial.println(directoryName);
+    while (directory.next()) {
+        String filename = directory.fileName();
+        if (isAnimationFile(filename)) {
             numberOfFiles++;
-            if (displayFilenames) {
-                Serial.println(file.name());
-            }
+            if (displayFilenames) Serial.println(filename);
         }
-        file.close();
-        file = directory.openNextFile();
     }
-
-    file.close();
-    directory.close();
-
     return numberOfFiles;
 }
 
 // Get the full path/filename of the GIF file with specified index
 void getGIFFilenameByIndex(const char *directoryName, int index, char *pnBuffer) {
 
-    char* filename;
-
     // Make sure index is in range
     if ((index < 0) || (index >= numberOfFiles))
         return;
 
-    File directory = SD.open(directoryName);
-    if (!directory)
-        return;
-
-    File file = directory.openNextFile();
-    while (file && (index >= 0)) {
-        filename = (char*)file.name();
-
-        if (isAnimationFile(file.name())) {
+    Dir directory = SPIFFS.openDir(directoryName);
+    
+    while (directory.next() && index >= 0) {
+        String filename = directory.fileName();
+        if (isAnimationFile(filename)) {
             index--;
-
-#if !defined(ESP32)
-            // Copy the directory name into the pathname buffer - ESP32 SD Library includes the full path name in the filename, so no need to add the directory name
-            strcpy(pnBuffer, directoryName);
-            // Append the filename to the pathname
-            strcat(pnBuffer, filename);
-#else
-            strcpy(pnBuffer, filename);
-#endif
+            filename.toCharArray(pnBuffer, 29);
         }
-
-        file.close();
-        file = directory.openNextFile();
     }
+    Serial.print("Selected file ");
+    Serial.println(pnBuffer);
 
     file.close();
-    directory.close();
 }
 
 int openGifFilenameByIndex(const char *directoryName, int index) {
@@ -139,14 +100,15 @@ int openGifFilenameByIndex(const char *directoryName, int index) {
 
     getGIFFilenameByIndex(directoryName, index, pathname);
     
-    Serial.print("Pathname: ");
-    Serial.println(pathname);
+    // Pathname: /gifs/32anim_balls.gif
+    //Serial.print("Pathname: ");
+    //Serial.println(pathname);
 
     if(file)
         file.close();
 
     // Attempt to open the file for reading
-    file = SD.open(pathname);
+    file = SPIFFS.open(pathname, "r");
     if (!file) {
         Serial.println("Error opening GIF file");
         return -1;

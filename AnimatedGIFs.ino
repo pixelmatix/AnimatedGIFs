@@ -31,16 +31,6 @@
  * The GIFs can be up to 32 pixels in width and height.
  * This code has been tested with 32x32 pixel and 16x16 pixel GIFs, but is optimized for 32x32 pixel GIFs.
  *
- * Wiring is on the default Teensy 3.1 SPI pins, and chip select can be on any GPIO,
- * set by defining SD_CS in the code below
- * Function     | Pin
- * DOUT         |  11
- * DIN          |  12
- * CLK          |  13
- * CS (default) |  15
- *
- * Wiring for ESP32 follows the default for the ESP32 SD Library, see: https://github.com/espressif/arduino-esp32/tree/master/libraries/SDis is on the default Teensy 3.1 SPI pins, and chip select can be on any GPIO,
- *
  * This code first looks for .gif files in the /gifs/ directory
  * (customize below with the GIF_DIRECTORY definition) then plays random GIFs in the directory,
  * looping each GIF for DISPLAY_TIME_SECONDS
@@ -56,38 +46,27 @@
  * https://github.com/pixelmatix/AnimatedGIFs/issues
  */
 
-/*
- * CONFIGURATION:
- *  - If you're using SmartLED Shield V4 (or above), uncomment the line that includes <SmartMatrixShieldV4.h>
- *  - update the "SmartMatrix configuration and memory allocation" section to match the width and height and other configuration of your display
- *  - Note for 128x32 and 64x64 displays with Teensy 3.2 - need to reduce RAM:
- *    set kRefreshDepth=24 and kDmaBufferRows=2 or set USB Type: "None" in Arduino,
- *    decrease refreshRate in setup() to 90 or lower to get good an accurate GIF frame rate
- *  - Set the chip select pin for your board.  On Teensy 3.5/3.6, the onboard microSD CS pin is "BUILTIN_SDCARD"
- *  - For ESP32 and large panels, you don't need to lower the refreshRate, but you can lower the frameRate (number of times the refresh buffer
- *    is updaed with new data per second), giving more time for the CPU to decode the GIF.
- *    Use matrix.setMaxCalculationCpuPercentage() or matrix.setCalcRefreshRateDivider()
- */
+#include "config.h"
 
-#if defined (ARDUINO)
-//#include <SmartLEDShieldV4.h>  // uncomment this line for SmartLED Shield V4 (needs to be before #include <SmartMatrix3.h>)
-#include <SmartMatrix3.h>
-#elif defined (SPARK)
-#include "application.h"
-#include "SmartMatrix3_Photon_Apa102/SmartMatrix3_Photon_Apa102.h"
-#endif
+// http://esp8266.github.io/Arduino/versions/2.3.0/doc/filesystem.html#uploading-files-to-file-system
+// esp8266com/esp8266/libraries/SD/src/File.cpp
+#include <FS.h>
 
-#include <SD.h>
 #include "GifDecoder.h"
 #include "FilenameFunctions.h"
 
-#define DISPLAY_TIME_SECONDS 10
+#ifdef ESP8266
+extern "C" {
+#include "user_interface.h"
+}
+#endif
 
-#define ENABLE_SCROLLING  1
+#define DISPLAY_TIME_SECONDS 10
 
 // range 0-255
 const int defaultBrightness = 255;
 
+#define rgb24 CRGB
 const rgb24 COLOR_BLACK = {
     0, 0, 0 };
 
@@ -95,18 +74,7 @@ const rgb24 COLOR_BLACK = {
 #define COLOR_DEPTH 24                  // known working: 24, 48 - If the sketch uses type `rgb24` directly, COLOR_DEPTH must be 24
 const uint8_t kMatrixWidth = 32;        // known working: 32, 64, 96, 128
 const uint8_t kMatrixHeight = 32;       // known working: 16, 32, 48, 64
-const uint8_t kRefreshDepth = 36;       // known working: 24, 36, 48
-const uint8_t kDmaBufferRows = 2;       // known working: 2-4
-const uint8_t kPanelType = SMARTMATRIX_HUB75_32ROW_MOD16SCAN; // use SMARTMATRIX_HUB75_16ROW_MOD8SCAN for common 16x32 panels
-const uint8_t kMatrixOptions = (SMARTMATRIX_OPTIONS_NONE);    // see http://docs.pixelmatix.com/SmartMatrix for options
-const uint8_t kBackgroundLayerOptions = (SM_BACKGROUND_OPTIONS_NONE);
-const uint8_t kScrollingLayerOptions = (SM_SCROLLING_OPTIONS_NONE);
 
-SMARTMATRIX_ALLOCATE_BUFFERS(matrix, kMatrixWidth, kMatrixHeight, kRefreshDepth, kDmaBufferRows, kPanelType, kMatrixOptions);
-SMARTMATRIX_ALLOCATE_BACKGROUND_LAYER(backgroundLayer, kMatrixWidth, kMatrixHeight, COLOR_DEPTH, kBackgroundLayerOptions);
-#if ENABLE_SCROLLING == 1
-SMARTMATRIX_ALLOCATE_SCROLLING_LAYER(scrollingLayer, kMatrixWidth, kMatrixHeight, COLOR_DEPTH, kScrollingLayerOptions);
-#endif
 
 /* template parameters are maxGifWidth, maxGifHeight, lzwMaxBits
  * 
@@ -116,40 +84,53 @@ SMARTMATRIX_ALLOCATE_SCROLLING_LAYER(scrollingLayer, kMatrixWidth, kMatrixHeight
  */
 GifDecoder<kMatrixWidth, kMatrixHeight, 12> decoder;
 
-// Chip select for SD card on the SmartMatrix Shield or Photon
-#if defined(ESP32)
-    #define SD_CS 5
-#elif defined (ARDUINO)
-    #define SD_CS 15
-    //#define SD_CS BUILTIN_SDCARD
-#elif defined (SPARK)
-    #define SD_CS SS
-#endif
 
-#if defined(ESP32)
-    // ESP32 SD Library can't handle a trailing slash in the directory name
-    #define GIF_DIRECTORY "/gifs"
-#else
-    // Teensy SD Library requires a trailing slash in the directory name
-    #define GIF_DIRECTORY "/gifs/"
-#endif
+#define GIF_DIRECTORY "/gifs/"
 
 int num_files;
 
 void screenClearCallback(void) {
-  backgroundLayer.fillScreen({0,0,0});
+  matrix_clear();
 }
 
 void updateScreenCallback(void) {
-  backgroundLayer.swapBuffers();
+  matrix_show();
 }
 
 void drawPixelCallback(int16_t x, int16_t y, uint8_t red, uint8_t green, uint8_t blue) {
-  backgroundLayer.drawPixel(x, y, {red, green, blue});
+  matrixleds[XY(x,y)] = red*65536 + green*256 + blue;
 }
 
 // Setup method runs once, when the sketch starts
 void setup() {
+    Serial.begin(115200);
+
+#ifdef ESP8266
+    Serial.println();
+    Serial.print( F("Heap: ") ); Serial.println(system_get_free_heap_size());
+    Serial.print( F("Boot Vers: ") ); Serial.println(system_get_boot_version());
+    Serial.print( F("CPU: ") ); Serial.println(system_get_cpu_freq());
+    Serial.print( F("SDK: ") ); Serial.println(system_get_sdk_version());
+    Serial.print( F("Chip ID: ") ); Serial.println(system_get_chip_id());
+    Serial.print( F("Flash ID: ") ); Serial.println(spi_flash_get_id());
+    Serial.print( F("Flash Size: ") ); Serial.println(ESP.getFlashChipRealSize());
+    Serial.print( F("Vcc: ") ); Serial.println(ESP.getVcc());
+    Serial.println();
+#endif
+
+    SPIFFS.begin();
+    Dir dir = SPIFFS.openDir("/");
+    while (dir.next()) {
+	String fileName = dir.fileName();
+	size_t fileSize = dir.fileSize();
+	Serial.printf("FS File: %s, size: %s\n", fileName.c_str(), String(fileSize).c_str());
+    }
+    Serial.printf("\n");
+
+    FastLED.addLeds<WS2811_PORTA,3>(matrixleds, NUMMATRIX/3).setCorrection(TypicalLEDStrip);
+    matrix->begin();
+
+    matrix->setBrightness(matrix_brightness);
     decoder.setScreenClearCallback(screenClearCallback);
     decoder.setUpdateScreenCallback(updateScreenCallback);
     decoder.setDrawPixelCallback(drawPixelCallback);
@@ -162,68 +143,18 @@ void setup() {
     // Seed the random number generator
     randomSeed(analogRead(14));
 
-    Serial.begin(115200);
-    Serial.println("Starting AnimatedGIFs Sketch");
-
-
-    // Initialize matrix
-    matrix.addLayer(&backgroundLayer); 
-#if ENABLE_SCROLLING == 1
-    matrix.addLayer(&scrollingLayer); 
-#endif
-
-    matrix.setBrightness(defaultBrightness);
-
-
-    // for large panels, may want to set the refresh rate lower to leave more CPU time to decoding GIFs (needed if GIFs are playing back slowly)
-    //matrix.setRefreshRate(90);
-
-#if !defined(ESP32)
-    matrix.begin();
-#endif
-
-#if defined(ESP32)
-    // for large panels on ESP32, may want to set the max percentage time dedicated to updating the refresh frames lower, to leave more CPU time to decoding GIFs (needed if GIFs are playing back slowly)
-    //matrix.setMaxCalculationCpuPercentage(50);
-
-    // alternatively, for large panels on ESP32, may want to set the calculation refresh rate divider lower to leave more CPU time to decoding GIFs (needed if GIFs are playing back slowly) - this has the same effect as matrix.setMaxCalculationCpuPercentage() but is set with a different parameter
-    //matrix.setCalcRefreshRateDivider(4);
-
-    // The ESP32 SD Card library is going to want to malloc about 28000 bytes of DMA-capable RAM, make sure at least that much is left free
-    matrix.begin(28000);
-#endif
-
-    // Clear screen
-    backgroundLayer.fillScreen(COLOR_BLACK);
-    backgroundLayer.swapBuffers(false);
-
-    if(initSdCard(SD_CS) < 0) {
-#if ENABLE_SCROLLING == 1
-        scrollingLayer.start("No SD card", -1);
-#endif
-        Serial.println("No SD card");
-        while(1);
-    }
-
-    // for ESP32 we need to allocate SmartMatrix DMA buffers after initializing the SD card to avoid using up too much memory
 
     // Determine how many animated GIF files exist
-    num_files = enumerateGIFFiles(GIF_DIRECTORY, false);
+    num_files = enumerateGIFFiles(GIF_DIRECTORY, true);
 
     if(num_files < 0) {
-#if ENABLE_SCROLLING == 1
-        scrollingLayer.start("No gifs directory", -1);
-#endif
         Serial.println("No gifs directory");
-        while(1);
+        delay(1000000);
     }
 
     if(!num_files) {
-#if ENABLE_SCROLLING == 1
-        scrollingLayer.start("Empty gifs directory", -1);
-#endif
         Serial.println("Empty gifs directory");
-        while(1);
+        delay(1000000);
     }
 }
 
@@ -231,17 +162,19 @@ void setup() {
 void loop() {
     static unsigned long futureTime;
 
-    int index = random(num_files);
+    //int index = random(num_files);
+    static int index = -1;
 
     if(futureTime < millis()) {
         if (++index >= num_files) {
             index = 0;
         }
+        Serial.print("Fetching file index #");
+        Serial.println(index);
 
         if (openGifFilenameByIndex(GIF_DIRECTORY, index) >= 0) {
             // Can clear screen for new animation here, but this might cause flicker with short animations
-            // matrix.fillScreen(COLOR_BLACK);
-            // matrix.swapBuffers();
+	    // matrix_clear();
 
             decoder.startDecoding();
 
@@ -252,3 +185,5 @@ void loop() {
 
     decoder.decodeFrame();
 }
+
+// vim:sts=4:sw=4
