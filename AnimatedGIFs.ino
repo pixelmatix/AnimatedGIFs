@@ -69,12 +69,21 @@
  *    Use matrix.setMaxCalculationCpuPercentage() or matrix.setCalcRefreshRateDivider()
  */
 
+//#define NEOMATRIX
+
+#ifdef NEOMATRIX
+#include "neomatrix_config.h"
+#define rgb24 CRGB
+
+#else
+#define ENABLE_SCROLLING  1
 #if defined (ARDUINO)
 //#include <SmartLEDShieldV4.h>  // uncomment this line for SmartLED Shield V4 (needs to be before #include <SmartMatrix3.h>)
 #include <SmartMatrix3.h>
 #elif defined (SPARK)
 #include "application.h"
 #include "SmartMatrix3_Photon_Apa102/SmartMatrix3_Photon_Apa102.h"
+#endif
 #endif
 
 #include <SD.h>
@@ -83,7 +92,6 @@
 
 #define DISPLAY_TIME_SECONDS 10
 
-#define ENABLE_SCROLLING  1
 
 // range 0-255
 const int defaultBrightness = 255;
@@ -95,6 +103,8 @@ const rgb24 COLOR_BLACK = {
 #define COLOR_DEPTH 24                  // known working: 24, 48 - If the sketch uses type `rgb24` directly, COLOR_DEPTH must be 24
 const uint8_t kMatrixWidth = 32;        // known working: 32, 64, 96, 128
 const uint8_t kMatrixHeight = 32;       // known working: 16, 32, 48, 64
+
+#ifndef NEOMATRIX
 const uint8_t kRefreshDepth = 36;       // known working: 24, 36, 48
 const uint8_t kDmaBufferRows = 2;       // known working: 2-4
 const uint8_t kPanelType = SMARTMATRIX_HUB75_32ROW_MOD16SCAN; // use SMARTMATRIX_HUB75_16ROW_MOD8SCAN for common 16x32 panels
@@ -107,6 +117,7 @@ SMARTMATRIX_ALLOCATE_BACKGROUND_LAYER(backgroundLayer, kMatrixWidth, kMatrixHeig
 #if ENABLE_SCROLLING == 1
 SMARTMATRIX_ALLOCATE_SCROLLING_LAYER(scrollingLayer, kMatrixWidth, kMatrixHeight, COLOR_DEPTH, kScrollingLayerOptions);
 #endif
+#endif
 
 /* template parameters are maxGifWidth, maxGifHeight, lzwMaxBits
  * 
@@ -117,7 +128,10 @@ SMARTMATRIX_ALLOCATE_SCROLLING_LAYER(scrollingLayer, kMatrixWidth, kMatrixHeight
 GifDecoder<kMatrixWidth, kMatrixHeight, 12> decoder;
 
 // Chip select for SD card on the SmartMatrix Shield or Photon
-#if defined(ESP32)
+// Teensy 3.5/3.6
+#if defined(__MK64FX512__) || defined(__MK66FX1M0__)
+    #define SD_CS BUILTIN_SDCARD
+#elif defined(ESP32)
     #define SD_CS 5
 #elif defined (ARDUINO)
     #define SD_CS 15
@@ -137,15 +151,27 @@ GifDecoder<kMatrixWidth, kMatrixHeight, 12> decoder;
 int num_files;
 
 void screenClearCallback(void) {
+#ifdef NEOMATRIX
+  matrix_clear();
+#else
   backgroundLayer.fillScreen({0,0,0});
+#endif
 }
 
 void updateScreenCallback(void) {
+#ifdef NEOMATRIX
+  matrix_show();
+#else
   backgroundLayer.swapBuffers();
+#endif
 }
 
 void drawPixelCallback(int16_t x, int16_t y, uint8_t red, uint8_t green, uint8_t blue) {
+#ifdef NEOMATRIX
+  matrixleds[XY(x+OFFSETX,y+OFFSETY)] = CRGB(red, green, blue);
+#else
   backgroundLayer.drawPixel(x, y, {red, green, blue});
+#endif
 }
 
 // Setup method runs once, when the sketch starts
@@ -166,6 +192,9 @@ void setup() {
     Serial.println("Starting AnimatedGIFs Sketch");
 
 
+#ifdef NEOMATRIX
+    matrix_setup();
+#else
     // Initialize matrix
     matrix.addLayer(&backgroundLayer); 
 #if ENABLE_SCROLLING == 1
@@ -196,6 +225,7 @@ void setup() {
     // Clear screen
     backgroundLayer.fillScreen(COLOR_BLACK);
     backgroundLayer.swapBuffers(false);
+#endif // NEOMATRIX
 
     if(initSdCard(SD_CS) < 0) {
 #if ENABLE_SCROLLING == 1
@@ -215,7 +245,7 @@ void setup() {
         scrollingLayer.start("No gifs directory", -1);
 #endif
         Serial.println("No gifs directory");
-        while(1);
+        delay(100000000);
     }
 
     if(!num_files) {
@@ -223,7 +253,7 @@ void setup() {
         scrollingLayer.start("Empty gifs directory", -1);
 #endif
         Serial.println("Empty gifs directory");
-        while(1);
+        delay(100000000);
     }
 }
 
