@@ -50,7 +50,7 @@ bool isAnimationFile(const char filename []) {
         filenameString.remove(0, pathindex + 1);
 #endif
 
-    Serial.print(filenameString);
+    //Serial.print(filenameString);
 
     if ((filenameString[0] == '_') || (filenameString[0] == '~') || (filenameString[0] == '.')) {
         Serial.println(" ignoring: leading _/~/. character");
@@ -62,8 +62,6 @@ bool isAnimationFile(const char filename []) {
         Serial.println(" ignoring: doesn't end of .GIF");
         return false;
     }
-
-    Serial.println();
 
     return true;
 }
@@ -78,6 +76,7 @@ int enumerateGIFFiles(const char *directoryName, boolean displayFilenames) {
         return -1;
     }
 
+    Serial.print("List of files: ");
     File file = directory.openNextFile();
     while (file) {
         if (isAnimationFile(file.name())) {

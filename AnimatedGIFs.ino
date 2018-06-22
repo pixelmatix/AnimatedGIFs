@@ -70,6 +70,10 @@
  */
 
 //#define NEOMATRIX
+//#define DEBUGLINE 10
+
+// if you want to display a file and display that one first
+#define FIRSTINDEX 0
 
 #ifdef NEOMATRIX
 #include "neomatrix_config.h"
@@ -168,14 +172,34 @@ void updateScreenCallback(void) {
 
 void drawPixelCallback(int16_t x, int16_t y, uint8_t red, uint8_t green, uint8_t blue) {
 #ifdef NEOMATRIX
-  matrixleds[XY(x+OFFSETX,y+OFFSETY)] = CRGB(red, green, blue);
+  // This works but does not handle out of bounds pixels well (it writes to the last pixel)
+  // matrixleds[XY(x+OFFSETX,y+OFFSETY)] = CRGB(red, green, blue);
+  matrix->setPassThruColor(red*65536 + green*256 + blue);
+  // drawPixel ensures we don't write out of bounds
+  matrix->drawPixel(x+OFFSETX, y+OFFSETY, 0);
 #else
   backgroundLayer.drawPixel(x, y, {red, green, blue});
+#endif
+#if DEBUGLINE
+  if (y == DEBUGLINE) {
+  Serial.print(x);
+  Serial.print(",");
+  Serial.print(y);
+  Serial.print(">");
+  Serial.print(red);
+  Serial.print(",");
+  Serial.print(green);
+  Serial.print(",");
+  Serial.print(blue);
+  Serial.println("");
+  }
 #endif
 }
 
 // Setup method runs once, when the sketch starts
 void setup() {
+    // Wait for teensy to be ready
+    delay(3000);
     decoder.setScreenClearCallback(screenClearCallback);
     decoder.setUpdateScreenCallback(updateScreenCallback);
     decoder.setDrawPixelCallback(drawPixelCallback);
@@ -238,7 +262,7 @@ void setup() {
     // for ESP32 we need to allocate SmartMatrix DMA buffers after initializing the SD card to avoid using up too much memory
 
     // Determine how many animated GIF files exist
-    num_files = enumerateGIFFiles(GIF_DIRECTORY, false);
+    num_files = enumerateGIFFiles(GIF_DIRECTORY, true);
 
     if(num_files < 0) {
 #if ENABLE_SCROLLING == 1
@@ -259,26 +283,57 @@ void setup() {
 
 
 void loop() {
-    static unsigned long futureTime;
+    static unsigned long lastTime = millis();
+    static int index = FIRSTINDEX;
+    static int8_t new_file = 1;
+    char readchar;
 
-    int index = random(num_files);
+    // BUG: this does not work for index '0', just type '1', and 'p'
+    if (Serial.available()) readchar = Serial.read(); else readchar = 0;
+    if (readchar) {
+	while ((readchar >= '0') && (readchar <= '9')) {
+	    new_file = 10 * new_file + (readchar - '0');
+	    readchar = 0;
+	    if (Serial.available()) readchar = Serial.read();
+	}
 
-    if(futureTime < millis()) {
-        if (++index >= num_files) {
-            index = 0;
-        }
+	if (new_file) {
+	    Serial.print("Got new file via serial ");
+	    Serial.println(new_file);
+	    index = new_file;
+	} else {
+	    Serial.print("Got serial char ");
+	    Serial.println(readchar);
+	}
+    }
+    if (readchar == 'n')      { Serial.println("Serial => next"); new_file = 1;  index++;}
+    else if (readchar == 'p') { Serial.println("Serial => previous"); new_file = 1; index--;}
+
+    if (millis() - lastTime > (DISPLAY_TIME_SECONDS * 1000)) {
+	new_file = 1;
+	index++;
+    }
+
+    if (new_file) { 
+	new_file = 0;
+	lastTime = millis();
+	if (index >= num_files) index = 0;
+	if (index <= -1) index = num_files - 1;
+        Serial.print("Fetching file index #");
+        Serial.println(index);
 
         if (openGifFilenameByIndex(GIF_DIRECTORY, index) >= 0) {
             // Can clear screen for new animation here, but this might cause flicker with short animations
-            // matrix.fillScreen(COLOR_BLACK);
-            // matrix.swapBuffers();
+	    // matrix_clear();
 
             decoder.startDecoding();
-
-            // Calculate time in the future to terminate animation
-            futureTime = millis() + (DISPLAY_TIME_SECONDS * 1000);
-        }
+        } else {
+	    Serial.println("FATAL: failed to open file");
+	    delay(1000000);
+	}
     }
-
     decoder.decodeFrame();
+#if DEBUGLINE
+    delay(1000000);
+#endif
 }
