@@ -70,7 +70,7 @@
  */
 
 //#define NEOMATRIX
-//#define DEBUGLINE 10
+//#define DEBUGLINE 6
 
 // if you want to display a file and display that one first
 #define FIRSTINDEX 0
@@ -172,9 +172,10 @@ void updateScreenCallback(void) {
 
 void drawPixelCallback(int16_t x, int16_t y, uint8_t red, uint8_t green, uint8_t blue) {
 #ifdef NEOMATRIX
+  CRGB color = CRGB(matrix->gamma[red], matrix->gamma[green], matrix->gamma[blue]);
   // This works but does not handle out of bounds pixels well (it writes to the last pixel)
-  // matrixleds[XY(x+OFFSETX,y+OFFSETY)] = CRGB(red, green, blue);
-  matrix->setPassThruColor(red*65536 + green*256 + blue);
+  // matrixleds[XY(x+OFFSETX,y+OFFSETY)] = color;
+  matrix->setPassThruColor(color.red*65536 + color.green*256 + color.blue);
   // drawPixel ensures we don't write out of bounds
   matrix->drawPixel(x+OFFSETX, y+OFFSETY, 0);
 #else
@@ -279,37 +280,73 @@ void setup() {
         Serial.println("Empty gifs directory");
         delay(100000000);
     }
+    Serial.print("Index of files: 0 to ");
+    Serial.println(num_files);
 }
 
+void adjust_gamma(float change) {
+    matrix_gamma += change;
+    matrix->precal_gamma(matrix_gamma);
+    Serial.print("Change gamma to: "); 
+    Serial.println(matrix_gamma); 
+}
 
 void loop() {
     static unsigned long lastTime = millis();
     static int index = FIRSTINDEX;
     static int8_t new_file = 1;
+    // allow stalling on a picture if requested
+    static uint32_t longer = 0;
     char readchar;
 
-    // BUG: this does not work for index '0', just type '1', and 'p'
     if (Serial.available()) readchar = Serial.read(); else readchar = 0;
-    if (readchar) {
-	while ((readchar >= '0') && (readchar <= '9')) {
-	    new_file = 10 * new_file + (readchar - '0');
-	    readchar = 0;
-	    if (Serial.available()) readchar = Serial.read();
-	}
 
-	if (new_file) {
-	    Serial.print("Got new file via serial ");
-	    Serial.println(new_file);
-	    index = new_file;
-	} else {
-	    Serial.print("Got serial char ");
-	    Serial.println(readchar);
+
+    switch(readchar) {
+    case 'n': 
+	Serial.println("Serial => next"); 
+	new_file = 1;  
+	index++;
+	break;
+
+    case 'p':
+	Serial.println("Serial => previous");
+	new_file = 1;
+	index--;
+	break;
+
+    case '+': adjust_gamma(+0.2); break;
+
+    case '-': adjust_gamma(-0.2); break;
+
+    // = allows staying on a single picture for up to 1H instead of a few seconds
+    case '=':
+	longer = longer?0:3600;
+	Serial.print("Image display time: "); 
+	Serial.println(longer + DISPLAY_TIME_SECONDS); 
+	break;
+
+    default:
+	// BUG: this does not work for index '0', just type '1', and 'p'
+	if (readchar) {
+	    while ((readchar >= '0') && (readchar <= '9')) {
+		new_file = 10 * new_file + (readchar - '0');
+		readchar = 0;
+		if (Serial.available()) readchar = Serial.read();
+	    }
+
+	    if (new_file) {
+		Serial.print("Got new file via serial ");
+		Serial.println(new_file);
+		index = new_file;
+	    } else {
+		Serial.print("Got serial char ");
+		Serial.println(readchar);
+	    }
 	}
     }
-    if (readchar == 'n')      { Serial.println("Serial => next"); new_file = 1;  index++;}
-    else if (readchar == 'p') { Serial.println("Serial => previous"); new_file = 1; index--;}
 
-    if (millis() - lastTime > (DISPLAY_TIME_SECONDS * 1000)) {
+    if (millis() - lastTime > ((DISPLAY_TIME_SECONDS + longer) * 1000)) {
 	new_file = 1;
 	index++;
     }
@@ -337,3 +374,5 @@ void loop() {
     delay(1000000);
 #endif
 }
+
+// vim:sts=4:sw=4

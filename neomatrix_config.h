@@ -30,7 +30,8 @@ FastLED_NeoMatrix *matrix = new FastLED_NeoMatrix(matrixleds, MATRIX_TILE_WIDTH,
     NEO_MATRIX_ROWS + NEO_MATRIX_ZIGZAG + 
     NEO_TILE_TOP + NEO_TILE_LEFT +  NEO_TILE_PROGRESSIVE);
 
-uint8_t matrix_brightness = 32;
+uint8_t matrix_brightness = 64;
+float matrix_gamma = 5.0; // higher number is darker
 
 uint16_t XY( uint8_t x, uint8_t y) {
     return matrix->XY(x,y);
@@ -68,11 +69,11 @@ void matrix_setup() {
     matrix->begin();
 
     matrix->setBrightness(matrix_brightness);
+    matrix->precal_gamma(matrix_gamma);
 }
 
 // If the matrix is not 32x32, adjust how the image is displayed
 #define OFFSETX -4
 #define OFFSETY 0
 
-#endif //config_h
-
+#endif // config_h
