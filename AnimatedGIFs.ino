@@ -27,19 +27,22 @@
  */
 
 /*
- * This example displays 32x32 GIF animations loaded from a SD Card connected to the Teensy 3.1
- * The GIFs can be up to 32 pixels in width and height.
- * This code has been tested with 32x32 pixel and 16x16 pixel GIFs, but is optimized for 32x32 pixel GIFs.
+ * This SmartMatrix Library example displays GIF animations loaded from a SD Card connected to the Teensy 3
  *
- * Wiring is on the default Teensy 3.1 SPI pins, and chip select can be on any GPIO,
- * set by defining SD_CS in the code below
+ * The example can be modified to drive displays other than SmartMatrix by replacing SmartMatrix Library calls in setup() and
+ * the *Callback() functions with calls to a different library
+ *
+ * This code has been tested with many size GIFs including 128x32, 64x64, 32x32, and 16x16 pixel GIFs, but is optimized for 32x32 pixel GIFs.
+ *
+ * Wiring is on the default Teensy 3.2 SPI pins, and chip select can be on any GPIO,
+ * set by defining SD_CS in the code below.  For Teensy 3.5/3.6 with the onboard SDIO, change SD_CS to BUILTIN_SDCARD
  * Function     | Pin
  * DOUT         |  11
  * DIN          |  12
  * CLK          |  13
  * CS (default) |  15
  *
- * Wiring for ESP32 follows the default for the ESP32 SD Library, see: https://github.com/espressif/arduino-esp32/tree/master/libraries/SDis is on the default Teensy 3.1 SPI pins, and chip select can be on any GPIO,
+ * Wiring for ESP32 follows the default for the ESP32 SD Library, see: https://github.com/espressif/arduino-esp32/tree/master/libraries/SD
  *
  * This code first looks for .gif files in the /gifs/ directory
  * (customize below with the GIF_DIRECTORY definition) then plays random GIFs in the directory,
@@ -111,8 +114,8 @@ SMARTMATRIX_ALLOCATE_SCROLLING_LAYER(scrollingLayer, kMatrixWidth, kMatrixHeight
 /* template parameters are maxGifWidth, maxGifHeight, lzwMaxBits
  * 
  * The lzwMaxBits value of 12 supports all GIFs, but uses 16kB RAM
- * lzwMaxBits can be set to 10 or 11 for small displays, 12 for large displays
- * All 32x32-pixel GIFs tested work with 11, most work with 10
+ * lzwMaxBits can be set to 10 or 11 for smaller displays to save RAM, but use 12 for large displays
+ * All 32x32-pixel GIFs tested so far work with 11, most work with 10
  */
 GifDecoder<kMatrixWidth, kMatrixHeight, 12> decoder;
 
