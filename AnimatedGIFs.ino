@@ -61,7 +61,7 @@
 
 /*
  * CONFIGURATION:
- *  - If you're using SmartLED Shield V4 (or above), uncomment the line that includes <SmartMatrixShieldV4.h>
+ *  - If you're not using SmartLED Shield V4 (or above), comment out the line that includes <SmartMatrixShieldV4.h>
  *  - update the "SmartMatrix configuration and memory allocation" section to match the width and height and other configuration of your display
  *  - Note for 128x32 and 64x64 displays with Teensy 3.2 - need to reduce RAM:
  *    set kRefreshDepth=24 and kDmaBufferRows=2 or set USB Type: "None" in Arduino,
@@ -73,7 +73,7 @@
  */
 
 #if defined (ARDUINO)
-//#include <SmartLEDShieldV4.h>  // uncomment this line for SmartLED Shield V4 (needs to be before #include <SmartMatrix3.h>)
+#include <SmartLEDShieldV4.h>  // comment out this line for if you're not using SmartLED Shield V4 hardware (this line needs to be before #include <SmartMatrix3.h>)
 #include <SmartMatrix3.h>
 #elif defined (SPARK)
 #include "application.h"
