@@ -64,9 +64,6 @@
 
 #endif
 
-#include "GifDecoder.h"
-
-
 // Error codes
 #define ERROR_NONE                 0
 #define ERROR_DONE_PARSING         1
