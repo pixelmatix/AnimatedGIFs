@@ -1,4 +1,4 @@
-# Adafruit_Arcada_GifDecoder
+# Adafruit_Arcada_GifDecoder [![Build Status](https://github.com/adafruit/Adafruit_Arcada_GifDecoder/workflows/Arduino%20Library%20CI/badge.svg)](https://github.com/adafruit/Adafruit_Arcada_GifDecoder/actions)
 
 Display GIFs on TFT screens from Flash or SD, using Adafruit Arcada. GIFs reside in a directory "/gifs" on the filesystem. If using QSPI storage and TinyUSB stack, the filesystem will be available as a USB disk drive
 
