@@ -30,7 +30,7 @@
  * This SmartMatrix Library example displays GIF animations loaded from a SD Card connected to the Teensy 3
  *
  * The example can be modified to drive displays other than SmartMatrix by replacing SmartMatrix Library calls in setup() and
- * the *Callback() functions with calls to a different library
+ * the *Callback() functions with calls to a different library (look for the USE_SMARTMATRIX and ENABLE_SCROLLING blocks and replace)
  *
  * This code has been tested with many size GIFs including 128x32, 64x64, 32x32, and 16x16 pixel GIFs, but is optimized for 32x32 pixel GIFs.
  *
@@ -86,7 +86,8 @@
 
 #define DISPLAY_TIME_SECONDS 10
 
-#define ENABLE_SCROLLING  1
+#define USE_SMARTMATRIX         1
+#define ENABLE_SCROLLING        1
 
 // range 0-255
 const int defaultBrightness = 255;
@@ -94,6 +95,7 @@ const int defaultBrightness = 255;
 const rgb24 COLOR_BLACK = {
     0, 0, 0 };
 
+#if (USE_SMARTMATRIX == 1)
 /* SmartMatrix configuration and memory allocation */
 #define COLOR_DEPTH 24                  // known working: 24, 48 - If the sketch uses type `rgb24` directly, COLOR_DEPTH must be 24
 const uint8_t kMatrixWidth = 32;        // known working: 32, 64, 96, 128
@@ -107,8 +109,9 @@ const uint8_t kScrollingLayerOptions = (SM_SCROLLING_OPTIONS_NONE);
 
 SMARTMATRIX_ALLOCATE_BUFFERS(matrix, kMatrixWidth, kMatrixHeight, kRefreshDepth, kDmaBufferRows, kPanelType, kMatrixOptions);
 SMARTMATRIX_ALLOCATE_BACKGROUND_LAYER(backgroundLayer, kMatrixWidth, kMatrixHeight, COLOR_DEPTH, kBackgroundLayerOptions);
-#if ENABLE_SCROLLING == 1
+#if (ENABLE_SCROLLING == 1)
 SMARTMATRIX_ALLOCATE_SCROLLING_LAYER(scrollingLayer, kMatrixWidth, kMatrixHeight, COLOR_DEPTH, kScrollingLayerOptions);
+#endif
 #endif
 
 /* template parameters are maxGifWidth, maxGifHeight, lzwMaxBits
@@ -140,15 +143,21 @@ GifDecoder<kMatrixWidth, kMatrixHeight, 12> decoder;
 int num_files;
 
 void screenClearCallback(void) {
+#if (USE_SMARTMATRIX == 1)
   backgroundLayer.fillScreen({0,0,0});
+#endif
 }
 
 void updateScreenCallback(void) {
+#if (USE_SMARTMATRIX == 1)
   backgroundLayer.swapBuffers();
+#endif
 }
 
 void drawPixelCallback(int16_t x, int16_t y, uint8_t red, uint8_t green, uint8_t blue) {
-  backgroundLayer.drawPixel(x, y, {red, green, blue});
+#if (USE_SMARTMATRIX == 1)
+    backgroundLayer.drawPixel(x, y, {red, green, blue});
+#endif
 }
 
 // Setup method runs once, when the sketch starts
@@ -169,9 +178,10 @@ void setup() {
     Serial.println("Starting AnimatedGIFs Sketch");
 
 
+#if (USE_SMARTMATRIX == 1)
     // Initialize matrix
     matrix.addLayer(&backgroundLayer); 
-#if ENABLE_SCROLLING == 1
+#if (ENABLE_SCROLLING == 1)
     matrix.addLayer(&scrollingLayer); 
 #endif
 
@@ -199,9 +209,10 @@ void setup() {
     // Clear screen
     backgroundLayer.fillScreen(COLOR_BLACK);
     backgroundLayer.swapBuffers(false);
+#endif
 
     if(initSdCard(SD_CS) < 0) {
-#if ENABLE_SCROLLING == 1
+#if (ENABLE_SCROLLING == 1)
         scrollingLayer.start("No SD card", -1);
 #endif
         Serial.println("No SD card");
@@ -209,12 +220,15 @@ void setup() {
     }
 
     // for ESP32 we need to allocate SmartMatrix DMA buffers after initializing the SD card to avoid using up too much memory
+#if (ENABLE_SCROLLING == 1)
+    scrollingLayer.start("TESTING TESTING TESTING", -1);
+#endif
 
     // Determine how many animated GIF files exist
     num_files = enumerateGIFFiles(GIF_DIRECTORY, false);
 
     if(num_files < 0) {
-#if ENABLE_SCROLLING == 1
+#if (ENABLE_SCROLLING == 1)
         scrollingLayer.start("No gifs directory", -1);
 #endif
         Serial.println("No gifs directory");
@@ -222,7 +236,7 @@ void setup() {
     }
 
     if(!num_files) {
-#if ENABLE_SCROLLING == 1
+#if (ENABLE_SCROLLING == 1)
         scrollingLayer.start("Empty gifs directory", -1);
 #endif
         Serial.println("Empty gifs directory");
