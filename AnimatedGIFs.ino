@@ -35,7 +35,7 @@
  * This code has been tested with many size GIFs including 128x32, 64x64, 32x32, and 16x16 pixel GIFs, but is optimized for 32x32 pixel GIFs.
  *
  * Wiring is on the default Teensy 3.2 SPI pins, and chip select can be on any GPIO,
- * set by defining SD_CS in the code below.  For Teensy 3.5/3.6 with the onboard SDIO, change SD_CS to BUILTIN_SDCARD
+ * set by defining SD_CS in the code below.  For Teensy 3.5/3.6/4.1 with the onboard SDIO, SD_CS should be the default BUILTIN_SDCARD
  * Function     | Pin
  * DOUT         |  11
  * DIN          |  12
@@ -72,13 +72,8 @@
  *    Use matrix.setMaxCalculationCpuPercentage() or matrix.setCalcRefreshRateDivider()
  */
 
-#if defined (ARDUINO)
 #include <SmartLEDShieldV4.h>  // comment out this line for if you're not using SmartLED Shield V4 hardware (this line needs to be before #include <SmartMatrix3.h>)
 #include <SmartMatrix3.h>
-#elif defined (SPARK)
-#include "application.h"
-#include "SmartMatrix3_Photon_Apa102/SmartMatrix3_Photon_Apa102.h"
-#endif
 
 #include <SD.h>
 #include "GifDecoder.h"
@@ -123,14 +118,12 @@ SMARTMATRIX_ALLOCATE_SCROLLING_LAYER(scrollingLayer, kMatrixWidth, kMatrixHeight
  */
 GifDecoder<kMatrixWidth, kMatrixHeight, 12> decoder;
 
-// Chip select for SD card on the SmartMatrix Shield or Photon
+// Chip select for SD card
 #if defined(ESP32)
     #define SD_CS 5
 #elif defined (ARDUINO)
-    #define SD_CS 15
-    //#define SD_CS BUILTIN_SDCARD
-#elif defined (SPARK)
-    #define SD_CS SS
+    #define SD_CS BUILTIN_SDCARD
+    //#define SD_CS 15
 #endif
 
 #if defined(ESP32)
