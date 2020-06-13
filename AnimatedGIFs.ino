@@ -222,7 +222,6 @@ void setup() {
         while(1);
     }
 
-    // for ESP32 we need to allocate SmartMatrix DMA buffers after initializing the SD card to avoid using up too much memory
 #if (ENABLE_SCROLLING == 1)
     scrollingLayer.start("TESTING TESTING TESTING", -1);
 #endif
