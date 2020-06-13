@@ -88,6 +88,7 @@
 
 #define USE_SMARTMATRIX         1
 #define ENABLE_SCROLLING        1
+#define START_WITH_RANDOM_GIF   1
 
 // range 0-255
 const int defaultBrightness = 255;
@@ -171,8 +172,10 @@ void setup() {
     decoder.setFileReadCallback(fileReadCallback);
     decoder.setFileReadBlockCallback(fileReadBlockCallback);
 
+#if (START_WITH_RANDOM_GIF == 1)
     // Seed the random number generator
     randomSeed(analogRead(14));
+#endif
 
     Serial.begin(115200);
     Serial.println("Starting AnimatedGIFs Sketch");
@@ -248,13 +251,13 @@ void setup() {
 void loop() {
     static unsigned long futureTime;
 
-    int index = random(num_files);
+#if (START_WITH_RANDOM_GIF == 1)
+    static int index = random(num_files);
+#else
+     static int index = 0;
+#endif   
 
     if(futureTime < millis()) {
-        if (++index >= num_files) {
-            index = 0;
-        }
-
         if (openGifFilenameByIndex(GIF_DIRECTORY, index) >= 0) {
             // Can clear screen for new animation here, but this might cause flicker with short animations
             // matrix.fillScreen(COLOR_BLACK);
@@ -264,6 +267,11 @@ void loop() {
 
             // Calculate time in the future to terminate animation
             futureTime = millis() + (DISPLAY_TIME_SECONDS * 1000);
+        }
+
+        // get the index for the next pass through
+        if (++index >= num_files) {
+            index = 0;
         }
     }
 
