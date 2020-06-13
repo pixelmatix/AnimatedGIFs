@@ -215,10 +215,6 @@ void setup() {
         while(1);
     }
 
-#if (ENABLE_SCROLLING == 1)
-    scrollingLayer.start("TESTING TESTING TESTING", -1);
-#endif
-
     // Determine how many animated GIF files exist
     num_files = enumerateGIFFiles(GIF_DIRECTORY, false);
 
