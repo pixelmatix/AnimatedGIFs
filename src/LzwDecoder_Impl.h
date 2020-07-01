@@ -38,7 +38,8 @@
 #include "GifDecoder.h"
 
 template <int maxGifWidth, int maxGifHeight, int lzwMaxBits>
-void GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::lzw_setTempBuffer(uint8_t * tempBuffer) {
+void GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::lzw_setTempBuffer(
+    uint8_t *tempBuffer) {
     temp_buffer = tempBuffer;
 }
 
@@ -46,7 +47,8 @@ void GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::lzw_setTempBuffer(uint8_
 //   csize initial code size in bits
 //   buf input data
 template <int maxGifWidth, int maxGifHeight, int lzwMaxBits>
-void GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::lzw_decode_init (int csize) {
+void GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::lzw_decode_init(
+    int csize) {
 
     // Initialize read buffer variables
     bbuf = 0;

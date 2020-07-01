@@ -93,43 +93,51 @@
 
 
 template <int maxGifWidth, int maxGifHeight, int lzwMaxBits>
-void GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::setStartDrawingCallback(callback f) {
-    startDrawingCallback = f;
+void GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::setStartDrawingCallback(
+    callback f) {
+  startDrawingCallback = f;
 }
 
 template <int maxGifWidth, int maxGifHeight, int lzwMaxBits>
-void GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::setUpdateScreenCallback(callback f) {
-    updateScreenCallback = f;
+void GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::setUpdateScreenCallback(
+    callback f) {
+  updateScreenCallback = f;
 }
 
 template <int maxGifWidth, int maxGifHeight, int lzwMaxBits>
-void GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::setDrawPixelCallback(pixel_callback f) {
-    drawPixelCallback = f;
+void GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::setDrawPixelCallback(
+    pixel_callback f) {
+  drawPixelCallback = f;
 }
 
 template <int maxGifWidth, int maxGifHeight, int lzwMaxBits>
-void GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::setScreenClearCallback(callback f) {
-    screenClearCallback = f;
+void GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::setScreenClearCallback(
+    callback f) {
+  screenClearCallback = f;
 }
 
 template <int maxGifWidth, int maxGifHeight, int lzwMaxBits>
-void GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::setFileSeekCallback(file_seek_callback f) {
-    fileSeekCallback = f;
+void GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::setFileSeekCallback(
+    file_seek_callback f) {
+  fileSeekCallback = f;
 }
 
 template <int maxGifWidth, int maxGifHeight, int lzwMaxBits>
-void GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::setFilePositionCallback(file_position_callback f) {
-    filePositionCallback = f;
+void GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::setFilePositionCallback(
+    file_position_callback f) {
+  filePositionCallback = f;
 }
 
 template <int maxGifWidth, int maxGifHeight, int lzwMaxBits>
-void GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::setFileReadCallback(file_read_callback f) {
-    fileReadCallback = f;
+void GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::setFileReadCallback(
+    file_read_callback f) {
+  fileReadCallback = f;
 }
 
 template <int maxGifWidth, int maxGifHeight, int lzwMaxBits>
-void GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::setFileReadBlockCallback(file_read_block_callback f) {
-    fileReadBlockCallback = f;
+void GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::
+    setFileReadBlockCallback(file_read_block_callback f) {
+  fileReadBlockCallback = f;
 }
 
 // Backup the read stream by n bytes
@@ -162,7 +170,8 @@ int GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::readWord() {
 
 // Read the specified number of bytes into the specified buffer
 template <int maxGifWidth, int maxGifHeight, int lzwMaxBits>
-int GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::readIntoBuffer(void *buffer, int numberOfBytes) {
+int GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::readIntoBuffer(
+    void *buffer, int numberOfBytes) {
 
     int result = fileReadBlockCallback(buffer, numberOfBytes);
     if (result == -1) {
@@ -173,7 +182,8 @@ int GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::readIntoBuffer(void *buff
 
 // Fill a portion of imageData buffer with a color index
 template <int maxGifWidth, int maxGifHeight, int lzwMaxBits>
-void GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::fillImageDataRect(uint8_t colorIndex, int x, int y, int width, int height) {
+void GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::fillImageDataRect(
+    uint8_t colorIndex, int x, int y, int width, int height) {
 
     int yOffset;
 
@@ -187,14 +197,16 @@ void GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::fillImageDataRect(uint8_
 
 // Fill entire imageData buffer with a color index
 template <int maxGifWidth, int maxGifHeight, int lzwMaxBits>
-void GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::fillImageData(uint8_t colorIndex) {
+void GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::fillImageData(
+    uint8_t colorIndex) {
 
     memset(imageData, colorIndex, sizeof(imageData));
 }
 
 // Copy image data in rect from a src to a dst
 template <int maxGifWidth, int maxGifHeight, int lzwMaxBits>
-void GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::copyImageDataRect(uint8_t *dst, uint8_t *src, int x, int y, int width, int height) {
+void GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::copyImageDataRect(
+    uint8_t *dst, uint8_t *src, int x, int y, int width, int height) {
 
     int yOffset, offset;
 
@@ -217,15 +229,15 @@ bool GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::parseGifHeader() {
     if ((strncmp(buffer, GIFHDRTAGNORM,  GIFHDRSIZE) != 0) &&
         (strncmp(buffer, GIFHDRTAGNORM1, GIFHDRSIZE) != 0))  {
         return false;
-    }
-    else    {
+  } else {
         return true;
     }
 }
 
 // Parse the logical screen descriptor
 template <int maxGifWidth, int maxGifHeight, int lzwMaxBits>
-void GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::parseLogicalScreenDescriptor() {
+void GifDecoder<maxGifWidth, maxGifHeight,
+                lzwMaxBits>::parseLogicalScreenDescriptor() {
 
     lsdWidth = readWord();
     lsdHeight = readWord();
@@ -249,7 +261,8 @@ void GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::parseLogicalScreenDescri
 
 // Parse the global color table
 template <int maxGifWidth, int maxGifHeight, int lzwMaxBits>
-void GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::parseGlobalColorTable() {
+void GifDecoder<maxGifWidth, maxGifHeight,
+                lzwMaxBits>::parseGlobalColorTable() {
 
     // Does a global color table exist?
     if (lsdPackedField & COLORTBLFLAG) {
@@ -270,7 +283,8 @@ void GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::parseGlobalColorTable() 
 
 // Parse plain text extension and dispose of it
 template <int maxGifWidth, int maxGifHeight, int lzwMaxBits>
-void GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::parsePlainTextExtension() {
+void GifDecoder<maxGifWidth, maxGifHeight,
+                lzwMaxBits>::parsePlainTextExtension() {
 
 #if GIFDEBUG == 1 && DEBUG_PROCESSING_PLAIN_TEXT_EXT == 1
     Serial.println("\nProcessing Plain Text Extension");
@@ -291,7 +305,8 @@ void GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::parsePlainTextExtension(
 
 // Parse a graphic control extension
 template <int maxGifWidth, int maxGifHeight, int lzwMaxBits>
-void GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::parseGraphicControlExtension() {
+void GifDecoder<maxGifWidth, maxGifHeight,
+                lzwMaxBits>::parseGraphicControlExtension() {
 
 #if GIFDEBUG == 1 && DEBUG_PROCESSING_GRAPHIC_CONTROL_EXT == 1
     Serial.println("\nProcessing Graphic Control Extension");
@@ -331,7 +346,8 @@ void GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::parseGraphicControlExten
 
 // Parse application extension
 template <int maxGifWidth, int maxGifHeight, int lzwMaxBits>
-void GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::parseApplicationExtension() {
+void GifDecoder<maxGifWidth, maxGifHeight,
+                lzwMaxBits>::parseApplicationExtension() {
 
     memset(tempBuffer, 0, sizeof(tempBuffer));
 
@@ -363,7 +379,8 @@ void GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::parseApplicationExtensio
 
 // Parse comment extension
 template <int maxGifWidth, int maxGifHeight, int lzwMaxBits>
-void GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::parseCommentExtension() {
+void GifDecoder<maxGifWidth, maxGifHeight,
+                lzwMaxBits>::parseCommentExtension() {
 
 #if GIFDEBUG == 1 && DEBUG_PROCESSING_COMMENT_EXT == 1
     Serial.println("\nProcessing Comment Extension");
@@ -392,7 +409,8 @@ void GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::parseCommentExtension() 
 
 // Parse file terminator
 template <int maxGifWidth, int maxGifHeight, int lzwMaxBits>
-int GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::parseGIFFileTerminator() {
+int GifDecoder<maxGifWidth, maxGifHeight,
+               lzwMaxBits>::parseGIFFileTerminator() {
 
 #if GIFDEBUG == 1 && DEBUG_PROCESSING_FILE_TERM == 1
     Serial.println("\nProcessing file terminator");
@@ -407,8 +425,7 @@ int GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::parseGIFFileTerminator() 
 #endif
         Serial.println("Bad GIF file format - Bad terminator");
         return ERROR_BADGIFFORMAT;
-    }
-    else    {
+  } else {
         return ERROR_NONE;
     }
 }
@@ -477,8 +494,7 @@ void GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::parseTableBasedImage() {
     if (keyFrame) {
         if (transparentColorIndex == NO_TRANSPARENT_INDEX) {
             fillImageData(lsdBackgroundIndex);
-        }
-        else    {
+    } else {
             fillImageData(transparentColorIndex);
         }
         keyFrame = false;
@@ -489,7 +505,8 @@ void GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::parseTableBasedImage() {
         rectHeight = maxGifHeight;
     }
     // Don't clear matrix screen for these disposal methods
-    if ((prevDisposalMethod != DISPOSAL_NONE) && (prevDisposalMethod != DISPOSAL_LEAVE)) {
+  if ((prevDisposalMethod != DISPOSAL_NONE) &&
+      (prevDisposalMethod != DISPOSAL_LEAVE)) {
         if(screenClearCallback)
             (*screenClearCallback)();
     }
@@ -498,9 +515,9 @@ void GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::parseTableBasedImage() {
     if (prevDisposalMethod == DISPOSAL_BACKGROUND) {
         // Fill portion of imageData with previous background color
         fillImageDataRect(prevBackgroundIndex, rectX, rectY, rectWidth, rectHeight);
-    }
-    else if (prevDisposalMethod == DISPOSAL_RESTORE) {
-        copyImageDataRect(imageData, imageDataBU, rectX, rectY, rectWidth, rectHeight);
+  } else if (prevDisposalMethod == DISPOSAL_RESTORE) {
+    copyImageDataRect(imageData, imageDataBU, rectX, rectY, rectWidth,
+                      rectHeight);
     }
 
     // Save disposal method for this frame for next time
@@ -525,13 +542,12 @@ void GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::parseTableBasedImage() {
         if (disposalMethod == DISPOSAL_BACKGROUND) {
             if (transparentColorIndex != NO_TRANSPARENT_INDEX) {
                 prevBackgroundIndex = transparentColorIndex;
-            }
-            else    {
+      } else {
                 prevBackgroundIndex = lsdBackgroundIndex;
             }
-        }
-        else if (disposalMethod == DISPOSAL_RESTORE) {
-            copyImageDataRect(imageDataBU, imageData, rectX, rectY, rectWidth, rectHeight);
+    } else if (disposalMethod == DISPOSAL_RESTORE) {
+      copyImageDataRect(imageDataBU, imageData, rectX, rectY, rectWidth,
+                        rectHeight);
         }
     }
 
@@ -610,7 +626,8 @@ int GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::parseData() {
 
 #if GIFDEBUG == 1 && DEBUG_WAIT_FOR_KEY_PRESS == 1
     Serial.println("\nPress Key For Next");
-    while(Serial.read() <= 0);
+    while (Serial.read() <= 0)
+      ;
 #endif
 
         // Determine what kind of data to process
@@ -624,8 +641,7 @@ int GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::parseData() {
             parseTableBasedImage();
             parsedFrame = true;
 
-        }
-        else if (b == 0x21) {
+    } else if (b == 0x21) {
             // Parse extension
             b = readByte();
 
@@ -656,8 +672,7 @@ int GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::parseData() {
                 Serial.println(b, HEX);
                 return ERROR_UNKNOWNCONTROLEXT;
             }
-        }
-        else    {
+    } else {
 #if GIFDEBUG == 1 && DEBUG_PARSING_DATA == 1
     Serial.println("\nParsing Done");
 #endif
@@ -731,7 +746,8 @@ int GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::decodeFrame(void) {
 
 // Decompress LZW data and display animation frame
 template <int maxGifWidth, int maxGifHeight, int lzwMaxBits>
-void GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::decompressAndDisplayFrame(unsigned long filePositionAfter) {
+void GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::
+    decompressAndDisplayFrame(unsigned long filePositionAfter) {
 
     // Each pixel of image is 8 bits and is an index into the palette
 
@@ -769,7 +785,8 @@ void GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::decompressAndDisplayFram
 
 #if GIFDEBUG == 1 && DEBUG_WAIT_FOR_KEY_PRESS == 1
     Serial.println("\nPress Key For Next");
-    while(Serial.read() <= 0);
+  while (Serial.read() <= 0)
+    ;
 #endif
 
     // LZW doesn't parse through all the data, manually set position
@@ -794,7 +811,8 @@ void GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::decompressAndDisplayFram
 
             // Pixel not transparent so get color from palette and draw the pixel
             if(drawPixelCallback)
-                (*drawPixelCallback)(x, y, palette[pixel].red, palette[pixel].green, palette[pixel].blue);
+        (*drawPixelCallback)(x, y, palette[pixel].red, palette[pixel].green,
+                             palette[pixel].blue);
         }
     }
     // Make animation frame visible

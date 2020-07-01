@@ -4,7 +4,8 @@
 #include <stdint.h>
 
 typedef void (*callback)(void);
-typedef void (*pixel_callback)(int16_t x, int16_t y, uint8_t red, uint8_t green, uint8_t blue);
+typedef void (*pixel_callback)(int16_t x, int16_t y, uint8_t red, uint8_t green,
+                               uint8_t blue);
 typedef void* (*get_buffer_callback)(void);
 
 typedef bool (*file_seek_callback)(unsigned long position);
@@ -24,8 +25,7 @@ typedef struct rgb_24 {
 //   LZW_MAXBITS = 12 will support all GIFs, but takes 16kB RAM
 #define LZW_SIZTABLE  (1 << lzwMaxBits)
 
-template <int maxGifWidth, int maxGifHeight, int lzwMaxBits>
-class GifDecoder {
+template <int maxGifWidth, int maxGifHeight, int lzwMaxBits> class GifDecoder {
 public:
     int startDecoding(void);
     int decodeFrame(void);
@@ -52,16 +52,19 @@ private:
     void parseGlobalColorTable(void);
     void parseLogicalScreenDescriptor(void);
     bool parseGifHeader(void);
-    void copyImageDataRect(uint8_t *dst, uint8_t *src, int x, int y, int width, int height);
+  void copyImageDataRect(uint8_t *dst, uint8_t *src, int x, int y, int width,
+                         int height);
     void fillImageData(uint8_t colorIndex);
-    void fillImageDataRect(uint8_t colorIndex, int x, int y, int width, int height);
+  void fillImageDataRect(uint8_t colorIndex, int x, int y, int width,
+                         int height);
     int readIntoBuffer(void *buffer, int numberOfBytes);
     int readWord(void);
     void backUpStream(int n);
     int readByte(void);
 
     void lzw_decode_init(int csize);
-    int lzw_decode(uint8_t *buf, int len, uint8_t *bufend);
+  int lzw_decode(uint8_t *buf, int len,
+                 uint8_t *bufend); //, int align = 0);  //.kbv
     void lzw_setTempBuffer(uint8_t * tempBuffer);
     int lzw_get_code(void);
 
@@ -137,13 +140,9 @@ private:
     uint16_t prefix [LZW_SIZTABLE];
 
     // Masks for 0 .. 16 bits
-    unsigned int mask[17] = {
-        0x0000, 0x0001, 0x0003, 0x0007,
-        0x000F, 0x001F, 0x003F, 0x007F,
-        0x00FF, 0x01FF, 0x03FF, 0x07FF,
-        0x0FFF, 0x1FFF, 0x3FFF, 0x7FFF,
-        0xFFFF
-    };
+  unsigned int mask[17] = {0x0000, 0x0001, 0x0003, 0x0007, 0x000F, 0x001F,
+                           0x003F, 0x007F, 0x00FF, 0x01FF, 0x03FF, 0x07FF,
+                           0x0FFF, 0x1FFF, 0x3FFF, 0x7FFF, 0xFFFF};
 };
 
 #include "GifDecoder_Impl.h"
