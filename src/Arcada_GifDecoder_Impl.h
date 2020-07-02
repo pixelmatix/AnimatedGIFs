@@ -35,7 +35,7 @@
 #include "application.h"
 #endif
 
-#include "GifDecoder.h"
+#include "Arcada_GifDecoder.h"
 
 #if GIFDEBUG == 1
 #define DEBUG_SCREEN_DESCRIPTOR 1
@@ -59,8 +59,6 @@
 #define DEBUG_WAIT_FOR_KEY_PRESS 0
 
 #endif
-
-#include "GifDecoder.h"
 
 // Error codes
 #define ERROR_NONE 0

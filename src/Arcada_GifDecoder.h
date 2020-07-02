@@ -178,7 +178,7 @@ private:
                            0x0FFF, 0x1FFF, 0x3FFF, 0x7FFF, 0xFFFF};
 };
 
-#include "GifDecoder_Impl.h"
+#include "Arcada_GifDecoder_Impl.h"
 #include "LzwDecoder_Impl.h"
 
 #endif
