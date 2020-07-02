@@ -1,23 +1,18 @@
-AnimatedGIFs
-============
-This [SmartMatrix Library](http://docs.pixelmatix.com/SmartMatrix/index.html) example displays GIF animations loaded from a SD Card connected to the Teensy 3 using the [SmartMatrix Shield](http://docs.pixelmatix.com/SmartMatrix/shieldref.html)
+AnimatedGIFs Decoder Library
+============================
+This library decodes Animated GIF frames from a Filesystem, and draws them to a display.  The Filesystem and Display specific functions have been abstracted out using callback functions contained in the sketch, so this library should be useful on many different platforms.
 
-The example can be modified to drive displays other than SmartMatrix by replacing SmartMatrix Library calls in `setup()` and the `*Callback()` functions with calls to a different library
+A [SmartMatrix Library](http://docs.pixelmatix.com/SmartMatrix/index.html) example is included, reading from a SD card.  This works on both the Teensy and ESP32 platforms.
 
-Wiring is on the default Teensy 3 SPI pins, and chip select can be on any GPIO (customize by defining `SD_CS` in the code).  For Teensy 3.5/3.6 with the onboard SDIO, change `SD_CS` to `BUILTIN_SDCARD`
+For ESP32/ESP8266 SPI_FS, try adapting the SmartMatrix example, using the FilenameFunctions code in this repository: https://github.com/prenticedavid/AnimatedGIFs_SD
 
-Function     | Pin
--------------|----
-DOUT         |  11
-DIN          |  12
-CLK          |  13
-CS (default) |  15
+For Adafruit's Arcada platform, see the examples in this repository: https://github.com/adafruit/Adafruit_Arcada_GifDecoder
 
-Wiring for ESP32 follows the default for the ESP32 SD Library, see: https://github.com/espressif/arduino-esp32/tree/master/libraries/SD
+For other platforms or other displays, start with the SmartMatrix example, and remove the SmartMatrix-specific code, and modify FilenameFunctions as needed.
 
-This code first looks for .gif files in the /gifs/ directory (you can customize this with the GIF_DIRECTORY definition) then plays random GIFs in the directory, looping each GIF for DISPLAY_TIME_SECONDS
-
-This example is meant to give you an idea of how to add GIF playback to your own sketch.  For a project that adds GIF playback with other features, take a look at [Light Appliance](https://github.com/CraigLindley/LightAppliance) and [Aurora](https://github.com/pixelmatix/aurora):
+The included example is meant to give you an idea of how to add GIF playback to your own sketch.  For a project that adds GIF playback with other features, take a look at [Light Appliance](https://github.com/CraigLindley/LightAppliance), [Aurora](https://github.com/pixelmatix/aurora), and the Adafruit Arcada examples.
 
 If you find any GIFs that won't play properly, please attach them to a new
 Issue post in the GitHub repo [here](https://github.com/pixelmatix/AnimatedGIFs/issues):
+
+Many thanks to David Prentice and Adafruit for improvements on the original AnimatedGIFs sketch, and turning the sketch into a library, as well as the original author Craig A. Lindley.
