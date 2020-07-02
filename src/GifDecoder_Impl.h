@@ -900,8 +900,10 @@ void GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::
       //            maxGifWidth : 0; int ofs = tbiImageX - align; uint8_t *dst =
       //            (ofs < 0) ? imageBuf : imageBuf + ofs; align = (ofs < 0) ?
       //            -ofs : 0; int align = 0;
-      int len = lzw_decode(imageBuf + tbiImageX, tbiWidth,
+      lzw_decode(imageBuf + tbiImageX, tbiWidth,
                            imageBuf + maxGifWidth); //, align);
+      //int len = lzw_decode(imageBuf + tbiImageX, tbiWidth,
+      //                     imageBuf + maxGifWidth); //, align);
       // if (len != tbiWidth)
       //    Serial.println(len);
       int xofs = (disposalMethod == DISPOSAL_BACKGROUND) ? 0 : tbiImageX;
