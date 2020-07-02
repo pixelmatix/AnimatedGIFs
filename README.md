@@ -8,7 +8,7 @@ This example has been deeply modified from https://github.com/prenticedavid/Anim
 
 Original Credits (see also other readme)
 
-Set DEBUG to 0, 2, 3 in GifDecoderImpl.h  
+Set GIF_DEBUG to 0, 2, 3 in Arcada_GifDecoder_Impl.h  
 
 GIF optimisation via PC or online is not that clever.   
 They should minimise the display rectangle to only cover animation changes.
