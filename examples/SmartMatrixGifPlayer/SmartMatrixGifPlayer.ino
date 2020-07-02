@@ -76,7 +76,7 @@
 #include <SmartMatrix3.h>
 
 #include <SD.h>
-#include "GifDecoder.h"
+#include <GifDecoder.h>
 #include "FilenameFunctions.h"
 
 #define DISPLAY_TIME_SECONDS 10
