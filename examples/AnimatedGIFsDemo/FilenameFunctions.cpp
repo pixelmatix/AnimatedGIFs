@@ -6,11 +6,9 @@
  * Written by: Craig A. Lindley
  */
 
-#if defined (ARDUINO)
+#include "FilenameFunctions.h"
+
 #include <SD.h>
-#elif defined (SPARK)
-#include "sd-card-library-photon-compat/sd-card-library-photon-compat.h"
-#endif
 
 File file;
 
@@ -32,9 +30,11 @@ int fileReadBlockCallback(void * buffer, int numberOfBytes) {
     return file.read((uint8_t*)buffer, numberOfBytes);
 }
 
-int initSdCard(int chipSelectPin) {
+int initFileSystem(int chipSelectPin) {
     // initialize the SD card at full speed
-    pinMode(chipSelectPin, OUTPUT);
+    if (chipSelectPin >= 0) {
+        pinMode(chipSelectPin, OUTPUT);
+    }
     if (!SD.begin(chipSelectPin))
         return -1;
     return 0;
@@ -50,47 +50,47 @@ bool isAnimationFile(const char filename []) {
         filenameString.remove(0, pathindex + 1);
 #endif
 
-    Serial.print(filenameString);
-
     if ((filenameString[0] == '_') || (filenameString[0] == '~') || (filenameString[0] == '.')) {
-        Serial.println(" ignoring: leading _/~/. character");
         return false;
     }
 
     filenameString.toUpperCase();
-    if (filenameString.endsWith(".GIF") != 1) {
-        Serial.println(" ignoring: doesn't end of .GIF");
+    if (filenameString.endsWith(".GIF") != 1)
         return false;
-    }
-
-    Serial.println();
 
     return true;
 }
 
 // Enumerate and possibly display the animated GIF filenames in GIFS directory
-int enumerateGIFFiles(const char *directoryName, boolean displayFilenames) {
+int enumerateGIFFiles(const char *directoryName, bool displayFilenames) {
 
     numberOfFiles = 0;
 
     File directory = SD.open(directoryName);
+    File file;
+
     if (!directory) {
         return -1;
     }
 
-    File file = directory.openNextFile();
-    while (file) {
+    while (file = directory.openNextFile()) {
         if (isAnimationFile(file.name())) {
             numberOfFiles++;
             if (displayFilenames) {
-                Serial.println(file.name());
+                Serial.print(numberOfFiles);
+                Serial.print(":");
+                Serial.print(file.name());
+                Serial.print("    size:");
+                Serial.println(file.size());
             }
+        } else if (displayFilenames) {
+            Serial.println(file.name());
         }
+
         file.close();
-        file = directory.openNextFile();
     }
 
-    file.close();
+    //    file.close();
     directory.close();
 
     return numberOfFiles;
@@ -99,7 +99,6 @@ int enumerateGIFFiles(const char *directoryName, boolean displayFilenames) {
 // Get the full path/filename of the GIF file with specified index
 void getGIFFilenameByIndex(const char *directoryName, int index, char *pnBuffer) {
 
-    char* filename;
 
     // Make sure index is in range
     if ((index < 0) || (index >= numberOfFiles))
@@ -109,25 +108,29 @@ void getGIFFilenameByIndex(const char *directoryName, int index, char *pnBuffer)
     if (!directory)
         return;
 
-    File file = directory.openNextFile();
-    while (file && (index >= 0)) {
-        filename = (char*)file.name();
+    while ((index >= 0)) {
+        file = directory.openNextFile();
+        if (!file) break;
 
         if (isAnimationFile(file.name())) {
             index--;
 
-#if !defined(ESP32)
-            // Copy the directory name into the pathname buffer - ESP32 SD Library includes the full path name in the filename, so no need to add the directory name
+            // Copy the directory name into the pathname buffer			
             strcpy(pnBuffer, directoryName);
-            // Append the filename to the pathname
-            strcat(pnBuffer, filename);
+			
+			//ESP32 SD Library includes the full path name in the filename, so no need to add the directory name
+#if defined(ESP32)
+            pnBuffer[0] = 0;
 #else
-            strcpy(pnBuffer, filename);
+            int len = strlen(pnBuffer);
+            if (len == 0 || pnBuffer[len - 1] != '/') strcat(pnBuffer, "/");
 #endif
+
+            // Append the filename to the pathname
+            strcat(pnBuffer, file.name());
         }
 
         file.close();
-        file = directory.openNextFile();
     }
 
     file.close();
@@ -135,7 +138,7 @@ void getGIFFilenameByIndex(const char *directoryName, int index, char *pnBuffer)
 }
 
 int openGifFilenameByIndex(const char *directoryName, int index) {
-    char pathname[30];
+    char pathname[255];
 
     getGIFFilenameByIndex(directoryName, index, pathname);
     

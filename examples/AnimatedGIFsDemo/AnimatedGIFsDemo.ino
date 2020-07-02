@@ -207,7 +207,7 @@ void setup() {
     backgroundLayer.swapBuffers(false);
 #endif
 
-    if(initSdCard(SD_CS) < 0) {
+    if(initFileSystem(SD_CS) < 0) {
 #if (ENABLE_SCROLLING == 1)
         scrollingLayer.start("No SD card", -1);
 #endif
