@@ -80,6 +80,7 @@
 #include "FilenameFunctions.h"
 
 #define DISPLAY_TIME_SECONDS 10
+#define NUMBER_FULL_CYCLES   1
 
 #define USE_SMARTMATRIX         1
 #define ENABLE_SCROLLING        1
@@ -239,13 +240,21 @@ void setup() {
 void loop() {
     static unsigned long futureTime;
 
+    unsigned long now = millis();
+
 #if (START_WITH_RANDOM_GIF == 1)
     static int index = random(num_files);
 #else
      static int index = 0;
 #endif   
 
-    if(futureTime < millis()) {
+    // default behavior is to play the gif for DISPLAY_TIME_SECONDS or for NUMBER_FULL_CYCLES, whichever comes first
+#if 1
+    if(now > futureTime || decoder.getCycleNo() > NUMBER_FULL_CYCLES) {
+#else
+    // alt behavior is to play the gif until both DISPLAY_TIME_SECONDS and NUMBER_FULL_CYCLES have passed
+    if(now > futureTime && decoder.getCycleNo() > NUMBER_FULL_CYCLES) {
+#endif
         if (openGifFilenameByIndex(GIF_DIRECTORY, index) >= 0) {
             // Can clear screen for new animation here, but this might cause flicker with short animations
             // matrix.fillScreen(COLOR_BLACK);
@@ -254,7 +263,7 @@ void loop() {
             decoder.startDecoding();
 
             // Calculate time in the future to terminate animation
-            futureTime = millis() + (DISPLAY_TIME_SECONDS * 1000);
+            futureTime = now + (DISPLAY_TIME_SECONDS * 1000);
         }
 
         // get the index for the next pass through
