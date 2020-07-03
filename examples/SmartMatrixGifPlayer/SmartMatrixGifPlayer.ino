@@ -217,7 +217,7 @@ void setup() {
     }
 
     // Determine how many animated GIF files exist
-    num_files = enumerateGIFFiles(GIF_DIRECTORY, false);
+    num_files = enumerateGIFFiles(GIF_DIRECTORY, true);
 
     if(num_files < 0) {
 #if (ENABLE_SCROLLING == 1)
