@@ -41,7 +41,9 @@ public:
   int decodeFrame(bool delayAfterDecode = true);
   int getCycleTime(void) { return cycleTime; }   //.kbv
   int getCycleNo(void) { return cycleNo; }       //.kbv
+  unsigned long getFrameNo(void) { return frameNo; }  //.kbv which frame in animation
   int getFrameCount(void) { return frameCount; } //.kbv
+  unsigned int getFrameDelay_ms(void) { return frameDelay * 10; }  //.kbv
   void getSize(uint16_t *w, uint16_t *h) {
     *w = lsdWidth;
     *h = lsdHeight;
@@ -51,7 +53,7 @@ public:
   void setUpdateScreenCallback(callback f);
   void setDrawPixelCallback(pixel_callback f);
   void setDrawLineCallback(line_callback f);
-  void setStartDrawingCallback(callback f);
+  void setStartDrawingCallback(callback f); // note this is not called when NO_IMAGEDATA == 2, and has not been tested recently
 
   void setFileSeekCallback(file_seek_callback f);
   void setFilePositionCallback(file_position_callback f);
@@ -104,7 +106,7 @@ private:
   bool tbiInterlaced;
 
   bool _delayAfterDecode;
-  int frameDelay;
+  unsigned int frameDelay;
   int transparentColorIndex;
   int prevBackgroundIndex;
   int prevDisposalMethod;
@@ -117,7 +119,7 @@ private:
   int rectHeight;
   int cycleNo; //.kbv
   int cycleTime;
-  int frameNo;    //.kbv
+  unsigned long frameNo;    //.kbv
   int frameCount; //.kbv
                   //    int frameSize; //.kbv
 
