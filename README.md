@@ -4,7 +4,7 @@ This library decodes Animated GIF frames from a Filesystem, and draws them to a 
 
 A [SmartMatrix Library](http://docs.pixelmatix.com/SmartMatrix/index.html) example is included, reading from a SD card.  This works on both the Teensy and ESP32 platforms.
 
-For ESP32/ESP8266 SPI_FS, try adapting the SmartMatrix example, using the FilenameFunctions code in this repository: https://github.com/prenticedavid/AnimatedGIFs_SD
+For ESP32/ESP8266 SPIFFS, try adapting the SmartMatrix example, using the FilenameFunctions code in this repository: https://github.com/prenticedavid/AnimatedGIFs_SD
 
 For Adafruit's Arcada platform, see the examples in this repository: https://github.com/adafruit/Adafruit_Arcada_GifDecoder
 
