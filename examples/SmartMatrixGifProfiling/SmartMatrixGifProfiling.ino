@@ -239,22 +239,28 @@ void setup() {
 
 void loop() {
     static unsigned long displayStartTime_millis;
+    static int nextGIF = 1;     // we haven't loaded a GIF yet on first pass through, make sure we do that
+    static unsigned long lastDecodeTime_millis;
 
     unsigned long now = millis();
 
 #if (START_WITH_RANDOM_GIF == 1)
     static int index = random(num_files);
 #else
-     static int index = 0;
+    static int index = 0;
 #endif   
 
-    // default behavior is to play the gif for DISPLAY_TIME_SECONDS or for NUMBER_FULL_CYCLES, whichever comes first
 #if 1
+    // default behavior is to play the gif for DISPLAY_TIME_SECONDS or for NUMBER_FULL_CYCLES, whichever comes first
     if((now - displayStartTime_millis) > (DISPLAY_TIME_SECONDS * 1000) || decoder.getCycleNo() > NUMBER_FULL_CYCLES)
+        nextGIF = 1;
 #else
     // alt behavior is to play the gif until both DISPLAY_TIME_SECONDS and NUMBER_FULL_CYCLES have passed
     if((now - displayStartTime_millis) > (DISPLAY_TIME_SECONDS * 1000) && decoder.getCycleNo() > NUMBER_FULL_CYCLES)
+        nextGIF = 1;
 #endif
+
+    if(nextGIF)
     {
         if (openGifFilenameByIndex(GIF_DIRECTORY, index) >= 0) {
             // Can clear screen for new animation here, but this might cause flicker with short animations
@@ -271,6 +277,8 @@ void loop() {
         if (++index >= num_files) {
             index = 0;
         }
+
+        nextGIF = 0;
     }
 
     decoder.decodeFrame();
