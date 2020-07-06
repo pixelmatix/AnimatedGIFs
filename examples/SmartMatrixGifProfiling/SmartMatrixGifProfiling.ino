@@ -238,7 +238,7 @@ void setup() {
 
 
 void loop() {
-    static unsigned long futureTime;
+    static unsigned long displayStartTime_millis;
 
     unsigned long now = millis();
 
@@ -250,11 +250,12 @@ void loop() {
 
     // default behavior is to play the gif for DISPLAY_TIME_SECONDS or for NUMBER_FULL_CYCLES, whichever comes first
 #if 1
-    if(now > futureTime || decoder.getCycleNo() > NUMBER_FULL_CYCLES) {
+    if((now - displayStartTime_millis) > (DISPLAY_TIME_SECONDS * 1000) || decoder.getCycleNo() > NUMBER_FULL_CYCLES)
 #else
     // alt behavior is to play the gif until both DISPLAY_TIME_SECONDS and NUMBER_FULL_CYCLES have passed
-    if(now > futureTime && decoder.getCycleNo() > NUMBER_FULL_CYCLES) {
+    if((now - displayStartTime_millis) > (DISPLAY_TIME_SECONDS * 1000) && decoder.getCycleNo() > NUMBER_FULL_CYCLES)
 #endif
+    {
         if (openGifFilenameByIndex(GIF_DIRECTORY, index) >= 0) {
             // Can clear screen for new animation here, but this might cause flicker with short animations
             // matrix.fillScreen(COLOR_BLACK);
@@ -263,7 +264,7 @@ void loop() {
             decoder.startDecoding();
 
             // Calculate time in the future to terminate animation
-            futureTime = now + (DISPLAY_TIME_SECONDS * 1000);
+            displayStartTime_millis = now;
         }
 
         // get the index for the next pass through

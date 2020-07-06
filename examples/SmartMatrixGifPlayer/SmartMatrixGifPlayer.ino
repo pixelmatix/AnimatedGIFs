@@ -72,7 +72,8 @@
  *    Use matrix.setMaxCalculationCpuPercentage() or matrix.setCalcRefreshRateDivider()
  */
 
-#include <SmartLEDShieldV4.h>  // comment out this line for if you're not using SmartLED Shield V4 hardware (this line needs to be before #include <SmartMatrix3.h>)
+//#include <SmartLEDShieldV4.h>  // comment out this line for if you're not using SmartLED Shield V4 hardware (this line needs to be before #include <SmartMatrix3.h>)
+#include <MatrixHardware_T4Adapter.h>
 #include <SmartMatrix3.h>
 
 #include <SD.h>
@@ -80,7 +81,7 @@
 #include "FilenameFunctions.h"
 
 #define DISPLAY_TIME_SECONDS 10
-#define NUMBER_FULL_CYCLES   1
+#define NUMBER_FULL_CYCLES   100
 
 #define USE_SMARTMATRIX         1
 #define ENABLE_SCROLLING        1
@@ -95,11 +96,11 @@ const rgb24 COLOR_BLACK = {
 #if (USE_SMARTMATRIX == 1)
 /* SmartMatrix configuration and memory allocation */
 #define COLOR_DEPTH 24                  // known working: 24, 48 - If the sketch uses type `rgb24` directly, COLOR_DEPTH must be 24
-const uint8_t kMatrixWidth = 32;        // known working: 32, 64, 96, 128
-const uint8_t kMatrixHeight = 32;       // known working: 16, 32, 48, 64
+const uint8_t kMatrixWidth = 128;        // known working: 32, 64, 96, 128
+const uint8_t kMatrixHeight = 64;       // known working: 16, 32, 48, 64
 const uint8_t kRefreshDepth = 36;       // known working: 24, 36, 48
 const uint8_t kDmaBufferRows = 2;       // known working: 2-4
-const uint8_t kPanelType = SMARTMATRIX_HUB75_32ROW_MOD16SCAN; // use SMARTMATRIX_HUB75_16ROW_MOD8SCAN for common 16x32 panels, or use SMARTMATRIX_HUB75_64ROW_MOD32SCAN for common 64x64 panels
+const uint8_t kPanelType = SMARTMATRIX_HUB75_64ROW_MOD32SCAN; // use SMARTMATRIX_HUB75_16ROW_MOD8SCAN for common 16x32 panels, or use SMARTMATRIX_HUB75_64ROW_MOD32SCAN for common 64x64 panels
 const uint8_t kMatrixOptions = (SMARTMATRIX_OPTIONS_NONE);    // see http://docs.pixelmatix.com/SmartMatrix for options
 const uint8_t kBackgroundLayerOptions = (SM_BACKGROUND_OPTIONS_NONE);
 const uint8_t kScrollingLayerOptions = (SM_SCROLLING_OPTIONS_NONE);
@@ -238,7 +239,7 @@ void setup() {
 
 
 void loop() {
-    static unsigned long futureTime;
+    static unsigned long displayStartTime_millis;
 
     unsigned long now = millis();
 
@@ -250,11 +251,12 @@ void loop() {
 
     // default behavior is to play the gif for DISPLAY_TIME_SECONDS or for NUMBER_FULL_CYCLES, whichever comes first
 #if 1
-    if(now > futureTime || decoder.getCycleNo() > NUMBER_FULL_CYCLES) {
+    if((now - displayStartTime_millis) > (DISPLAY_TIME_SECONDS * 1000) || decoder.getCycleNo() > NUMBER_FULL_CYCLES)
 #else
     // alt behavior is to play the gif until both DISPLAY_TIME_SECONDS and NUMBER_FULL_CYCLES have passed
-    if(now > futureTime && decoder.getCycleNo() > NUMBER_FULL_CYCLES) {
+    if((now - displayStartTime_millis) > (DISPLAY_TIME_SECONDS * 1000) && decoder.getCycleNo() > NUMBER_FULL_CYCLES)
 #endif
+    {
         if (openGifFilenameByIndex(GIF_DIRECTORY, index) >= 0) {
             // Can clear screen for new animation here, but this might cause flicker with short animations
             // matrix.fillScreen(COLOR_BLACK);
@@ -263,7 +265,7 @@ void loop() {
             decoder.startDecoding();
 
             // Calculate time in the future to terminate animation
-            futureTime = now + (DISPLAY_TIME_SECONDS * 1000);
+            displayStartTime_millis = now;
         }
 
         // get the index for the next pass through
