@@ -27,7 +27,7 @@
    SOFTWARE.
 */
 
-//#define GIFDEBUG 2
+#define GIFDEBUG 1
 
 #if defined(ARDUINO)
 #include <Arduino.h>
@@ -47,7 +47,7 @@
 #define DEBUG_PROCESSING_FILE_TERM 1
 #define DEBUG_PROCESSING_TABLE_IMAGE_DESC 1
 #define DEBUG_PROCESSING_TBI_DESC_START 1
-#define DEBUG_PROCESSING_TBI_DESC_INTERLACED 0
+#define DEBUG_PROCESSING_TBI_DESC_INTERLACED 1
 #define DEBUG_PROCESSING_TBI_DESC_LOCAL_COLOR_TABLE 1
 #define DEBUG_PROCESSING_TBI_DESC_LZWCODESIZE 1
 #define DEBUG_PROCESSING_TBI_DESC_DATABLOCKSIZE 0
@@ -56,7 +56,7 @@
 #define DEBUG_PARSING_DATA 1
 #define DEBUG_DECOMPRESS_AND_DISPLAY 1
 
-#define DEBUG_WAIT_FOR_KEY_PRESS 0
+#define DEBUG_WAIT_FOR_KEY_PRESS 1
 
 #endif
 
@@ -759,7 +759,6 @@ int GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::decodeFrame(
     keyFrame = true;
     prevDisposalMethod = DISPOSAL_NONE;
     transparentColorIndex = NO_TRANSPARENT_INDEX;
-    frameStartTime = micros();
     fileSeekCallback(0);
 
     // parse Gif Header like with a new file
@@ -941,7 +940,12 @@ void GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::
     uint32_t t;
     while (((t = micros()) - frameStartTime) < priorFrameDelay)
       ;
+    
+    // keep track of total delays in the GIF, resetting on the first frame each cycle
+    if(frameNo == 1)
+      cycleTime = 0;
     cycleTime += frameDelay * 10;
+    
     if (updateScreenCallback) {
       (*updateScreenCallback)();
     }

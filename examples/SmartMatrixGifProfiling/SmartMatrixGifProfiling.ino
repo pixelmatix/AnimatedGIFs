@@ -72,15 +72,17 @@
  *    Use matrix.setMaxCalculationCpuPercentage() or matrix.setCalcRefreshRateDivider()
  */
 
-#include <SmartLEDShieldV4.h>  // comment out this line for if you're not using SmartLED Shield V4 hardware (this line needs to be before #include <SmartMatrix3.h>)
+//#include <SmartLEDShieldV4.h>  // comment out this line for if you're not using SmartLED Shield V4 hardware (this line needs to be before #include <SmartMatrix3.h>)
+#include <MatrixHardware_T4Adapter.h>
 #include <SmartMatrix3.h>
+#include "Layer_BackgroundInterpolation.h"
 
 #include <SD.h>
 #include <GifDecoder.h>
 #include "FilenameFunctions.h"
 
 #define DISPLAY_TIME_SECONDS 10
-#define NUMBER_FULL_CYCLES   1
+#define NUMBER_FULL_CYCLES   2
 
 #define USE_SMARTMATRIX         1
 #define ENABLE_SCROLLING        1
@@ -95,17 +97,17 @@ const rgb24 COLOR_BLACK = {
 #if (USE_SMARTMATRIX == 1)
 /* SmartMatrix configuration and memory allocation */
 #define COLOR_DEPTH 24                  // known working: 24, 48 - If the sketch uses type `rgb24` directly, COLOR_DEPTH must be 24
-const uint8_t kMatrixWidth = 32;        // known working: 32, 64, 96, 128
-const uint8_t kMatrixHeight = 32;       // known working: 16, 32, 48, 64
-const uint8_t kRefreshDepth = 36;       // known working: 24, 36, 48
+const uint8_t kMatrixWidth = 128;        // known working: 32, 64, 96, 128
+const uint8_t kMatrixHeight = 128;       // known working: 16, 32, 48, 64
+const uint8_t kRefreshDepth = 36;       // known working: 24, 36, 48 (on Teensy 4.x: 3, 6, 9, 12, 15, 18, 21, 24, 27, 30, 33, 36, 39, 42, 45, 48)
 const uint8_t kDmaBufferRows = 2;       // known working: 2-4
-const uint8_t kPanelType = SMARTMATRIX_HUB75_32ROW_MOD16SCAN; // use SMARTMATRIX_HUB75_16ROW_MOD8SCAN for common 16x32 panels, or use SMARTMATRIX_HUB75_64ROW_MOD32SCAN for common 64x64 panels
+const uint8_t kPanelType = SMARTMATRIX_HUB75_64ROW_MOD32SCAN; // use SMARTMATRIX_HUB75_16ROW_MOD8SCAN for common 16x32 panels, or use SMARTMATRIX_HUB75_64ROW_MOD32SCAN for common 64x64 panels
 const uint8_t kMatrixOptions = (SMARTMATRIX_OPTIONS_NONE);    // see http://docs.pixelmatix.com/SmartMatrix for options
 const uint8_t kBackgroundLayerOptions = (SM_BACKGROUND_OPTIONS_NONE);
 const uint8_t kScrollingLayerOptions = (SM_SCROLLING_OPTIONS_NONE);
 
 SMARTMATRIX_ALLOCATE_BUFFERS(matrix, kMatrixWidth, kMatrixHeight, kRefreshDepth, kDmaBufferRows, kPanelType, kMatrixOptions);
-SMARTMATRIX_ALLOCATE_BACKGROUND_LAYER(backgroundLayer, kMatrixWidth, kMatrixHeight, COLOR_DEPTH, kBackgroundLayerOptions);
+SMARTMATRIX_ALLOCATE_BACKGROUND_INTERPOLATION_LAYER(backgroundLayer, kMatrixWidth, kMatrixHeight, COLOR_DEPTH, kBackgroundLayerOptions);
 #if (ENABLE_SCROLLING == 1)
 SMARTMATRIX_ALLOCATE_SCROLLING_LAYER(scrollingLayer, kMatrixWidth, kMatrixHeight, COLOR_DEPTH, kScrollingLayerOptions);
 #endif
@@ -183,7 +185,7 @@ void setup() {
 #endif
 
     matrix.setBrightness(defaultBrightness);
-
+    matrix.setRefreshRate(240);
 
     // for large panels, may want to set the refresh rate lower to leave more CPU time to decoding GIFs (needed if GIFs are playing back slowly)
     //matrix.setRefreshRate(90);
@@ -206,6 +208,9 @@ void setup() {
     // Clear screen
     backgroundLayer.fillScreen(COLOR_BLACK);
     backgroundLayer.swapBuffers(false);
+
+    //matrix.setRefreshRate(240);
+
 #endif
 
     if(initFileSystem(SD_CS) < 0) {
@@ -238,9 +243,9 @@ void setup() {
 
 
 void loop() {
-    static unsigned long displayStartTime_millis;
+    static unsigned long fileStartTime_millis;
+    static unsigned long cycleStartTime_millis;
     static int nextGIF = 1;     // we haven't loaded a GIF yet on first pass through, make sure we do that
-    static unsigned long lastDecodeTime_millis;
 
     unsigned long now = millis();
 
@@ -250,18 +255,21 @@ void loop() {
     static int index = 0;
 #endif   
 
-#if 1
+    // todo: change to switch only on GIF end?
+#if 0
     // default behavior is to play the gif for DISPLAY_TIME_SECONDS or for NUMBER_FULL_CYCLES, whichever comes first
-    if((now - displayStartTime_millis) > (DISPLAY_TIME_SECONDS * 1000) || decoder.getCycleNo() > NUMBER_FULL_CYCLES)
+    if((now - fileStartTime_millis) > (DISPLAY_TIME_SECONDS * 1000) || decoder.getCycleNo() > NUMBER_FULL_CYCLES)
         nextGIF = 1;
 #else
     // alt behavior is to play the gif until both DISPLAY_TIME_SECONDS and NUMBER_FULL_CYCLES have passed
-    if((now - displayStartTime_millis) > (DISPLAY_TIME_SECONDS * 1000) && decoder.getCycleNo() > NUMBER_FULL_CYCLES)
+    if((now - fileStartTime_millis) > (DISPLAY_TIME_SECONDS * 1000) && decoder.getCycleNo() > NUMBER_FULL_CYCLES)
         nextGIF = 1;
 #endif
 
     if(nextGIF)
     {
+        cycleStartTime_millis = now;
+
         if (openGifFilenameByIndex(GIF_DIRECTORY, index) >= 0) {
             // Can clear screen for new animation here, but this might cause flicker with short animations
             // matrix.fillScreen(COLOR_BLACK);
@@ -270,7 +278,7 @@ void loop() {
             decoder.startDecoding();
 
             // Calculate time in the future to terminate animation
-            displayStartTime_millis = now;
+            fileStartTime_millis = now;
         }
 
         // get the index for the next pass through
@@ -281,5 +289,35 @@ void loop() {
         nextGIF = 0;
     }
 
-    decoder.decodeFrame();
+    int returnCode = decoder.decodeFrame();
+
+    // we completed one pass of the GIF, print some stats
+    if(returnCode == ERROR_DONE_PARSING) {
+        // Print the stats for this GIF      
+        char buf[80];
+        int32_t frames       = decoder.getFrameCount();
+        int32_t cycle_design = decoder.getCycleTime();  // Intended duration
+        int32_t cycle_actual = now - cycleStartTime_millis;       // Actual duration
+        int32_t percent = 100 * cycle_design / cycle_actual;
+        sprintf(buf, "[%ld frames = %ldms] actual: %ldms speed: %ld%%",
+                frames, cycle_design, cycle_actual, percent);
+        Serial.println(buf);
+
+        cycleStartTime_millis = now;
+    }
+
+#if 0
+    static unsigned long lastDecodeTime_millis;
+    int timeToDecode_ms = millis() - now;
+    Serial.print(decoder.getFrameNo());
+    Serial.print(" ");
+    Serial.print(decoder.getFrameDelay_ms());
+    Serial.print(" ");
+    Serial.print(timeToDecode_ms);
+    Serial.print(" ");
+    Serial.println(millis() - lastDecodeTime_millis);
+    lastDecodeTime_millis = millis();
+#endif
+
+    Serial.println(matrix.getRefreshRate());
 }
