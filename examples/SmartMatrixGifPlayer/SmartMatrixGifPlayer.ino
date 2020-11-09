@@ -166,6 +166,7 @@ void setup() {
     decoder.setFilePositionCallback(filePositionCallback);
     decoder.setFileReadCallback(fileReadCallback);
     decoder.setFileReadBlockCallback(fileReadBlockCallback);
+    decoder.setFileSizeCallback(fileSizeCallback);
 
 #if (START_WITH_RANDOM_GIF == 1)
     // Seed the random number generator
@@ -281,5 +282,8 @@ void loop() {
         nextGIF = 0;
     }
 
-    decoder.decodeFrame();
+    if(decoder.decodeFrame() < 0) {
+        // There's an error with this GIF, go to the next one
+        nextGIF = 1;
+    }
 }

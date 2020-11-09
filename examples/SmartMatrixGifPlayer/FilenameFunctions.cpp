@@ -30,6 +30,10 @@ int fileReadBlockCallback(void * buffer, int numberOfBytes) {
     return file.read((uint8_t*)buffer, numberOfBytes);
 }
 
+int fileSizeCallback(void) {
+    return file.size();
+}
+
 int initFileSystem(int chipSelectPin) {
     // initialize the SD card at full speed
     if (chipSelectPin >= 0) {

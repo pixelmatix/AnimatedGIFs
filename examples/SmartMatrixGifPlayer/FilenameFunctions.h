@@ -10,5 +10,6 @@ bool fileSeekCallback(unsigned long position);
 unsigned long filePositionCallback(void);
 int fileReadCallback(void);
 int fileReadBlockCallback(void * buffer, int numberOfBytes);
+int fileSizeCallback(void);
 
 #endif
