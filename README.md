@@ -1,5 +1,12 @@
 AnimatedGIFs Decoder Library
 ============================
+
+## Update November 2020
+
+**This sketch has been adapted into the [GifDecoder library](https://github.com/pixelmatix/GifDecoder/), which uses a more efficient GIF decoder.  This sketch won't be maintained anymore, but you can find similar functionality in the examples in GifDecoder**
+
+-----
+
 This library decodes Animated GIF frames from a Filesystem, and draws them to a display.  The Filesystem and Display specific functions have been abstracted out using callback functions contained in the sketch, so this library should be useful on many different platforms.
 
 A [SmartMatrix Library](http://docs.pixelmatix.com/SmartMatrix/index.html) example is included, reading from a SD card.  This works on both the Teensy and ESP32 platforms.
